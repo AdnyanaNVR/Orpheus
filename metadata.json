@@ -1,0 +1,8 @@
+{
+  "name": "Orpheus Point of Sales",
+  "description": "System combining hardware and software where businesses process customer payments, complete sales transactions, and manage core operations like inventory and reporting.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
