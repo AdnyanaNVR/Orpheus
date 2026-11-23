@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { ChannelDataset } from '../data/dashboardData';
+import { PeriodDataset } from '../data/dashboardData';
 import { InfoIcon } from './InfoIcon';
 
 interface TotalVisitsCardProps {
-  data: ChannelDataset['totalVisits'];
+  data: PeriodDataset['totalTransactions'];
 }
 
 function polarToCartesian(cx: number, cy: number, r: number, angleDeg: number) {
@@ -22,39 +22,37 @@ function describeArc(cx: number, cy: number, r: number, startAngle: number, endA
 }
 
 export const TotalVisitsCard: React.FC<TotalVisitsCardProps> = ({ data }) => {
-  const [hoveredChannel, setHoveredChannel] = useState<string | null>(null);
+  const [hoveredMethod, setHoveredMethod] = useState<string | null>(null);
 
-  // Build segmented donut arcs starting from 12 o'clock (-90 deg), clockwise
-  // Order visually matching screenshot: Website (#ededeb) -> Click & collect (#3e3e3c) -> In store (#7a7a76)
-  const orderedChannels =
-    data.channels.length === 3
-      ? [data.channels[0], data.channels[2], data.channels[1]]
-      : data.channels;
+  const orderedMethods =
+    data.methods.length === 3
+      ? [data.methods[0], data.methods[2], data.methods[1]]
+      : data.methods;
 
-  const totalCount = orderedChannels.reduce((acc, c) => acc + c.count, 0);
-  const gapDeg = orderedChannels.length > 1 ? 5 : 0;
+  const totalCount = orderedMethods.reduce((acc, m) => acc + m.count, 0);
+  const gapDeg = orderedMethods.length > 1 ? 5 : 0;
   let currentAngle = -90;
 
-  const segments = orderedChannels.map((ch) => {
-    const rawSweep = (ch.count / totalCount) * 360;
+  const segments = orderedMethods.map((m) => {
+    const rawSweep = (m.count / totalCount) * 360;
     const start = currentAngle + gapDeg / 2;
     const end = currentAngle + rawSweep - gapDeg / 2;
     currentAngle += rawSweep;
     return {
-      ...ch,
+      ...m,
       start,
       end: Math.max(start + 1, end),
     };
   });
 
-  const activeChannel = hoveredChannel
-    ? data.channels.find((c) => c.name === hoveredChannel)
+  const activeMethod = hoveredMethod
+    ? data.methods.find((m) => m.name === hoveredMethod)
     : null;
 
-  const centerPercent = activeChannel
-    ? Math.round(activeChannel.percent)
+  const centerPercent = activeMethod
+    ? Math.round(activeMethod.percent)
     : data.highlightPercent;
-  const centerLabel = activeChannel ? activeChannel.name : data.highlightLabel;
+  const centerLabel = activeMethod ? activeMethod.name : data.highlightLabel;
 
   return (
     <div className="bg-[#171716] border border-white/[0.06] rounded-[20px] px-[22px] py-[18px] flex items-center justify-between h-full">
@@ -63,33 +61,25 @@ export const TotalVisitsCard: React.FC<TotalVisitsCardProps> = ({ data }) => {
         <div>
           <div className="flex items-center gap-2">
             <h2 className="text-[14.5px] font-medium text-[#f2f2f0] tracking-[-0.01em]">
-              Total visits
+              Total transaksi
             </h2>
-            <InfoIcon tooltip="Combined customer sessions across storefront web, retail locations, and pickup orders." />
+            <InfoIcon tooltip="Distribusi total transaksi selesai berdasarkan metode pembayaran di kasir." />
           </div>
 
-          <div className="text-[28px] font-semibold text-[#f3f3f1] tracking-[-0.025em] leading-none mt-[10px] tabular-nums">
+          <div className="text-[28px] font-semibold text-[#f3f3f1] tracking-[-0.025em] leading-none mt-[12px] tabular-nums">
             {data.total}
-          </div>
-
-          <div className="flex items-center gap-[8px] mt-[8px]">
-            <span className="text-[11px] text-[#888884]">vs last month</span>
-            <span className="inline-flex items-center gap-[2px] rounded-full bg-[#222d27] px-[7px] py-[2px] text-[10.5px] font-semibold text-[#58c08d] leading-none tabular-nums">
-              <span>↑</span>
-              <span>{data.delta}</span>
-            </span>
           </div>
         </div>
 
-        {/* Channel Breakdown Rows */}
-        <div className="space-y-[7px] mt-[14px]">
-          {data.channels.map((ch) => {
-            const isDimmed = hoveredChannel !== null && hoveredChannel !== ch.name;
+        {/* Payment Method Breakdown Rows */}
+        <div className="space-y-[8px] mt-[14px]">
+          {data.methods.map((m) => {
+            const isDimmed = hoveredMethod !== null && hoveredMethod !== m.name;
             return (
               <div
-                key={ch.name}
-                onMouseEnter={() => setHoveredChannel(ch.name)}
-                onMouseLeave={() => setHoveredChannel(null)}
+                key={m.name}
+                onMouseEnter={() => setHoveredMethod(m.name)}
+                onMouseLeave={() => setHoveredMethod(null)}
                 className={`flex items-center justify-between cursor-pointer transition-opacity ${
                   isDimmed ? 'opacity-45' : 'opacity-100'
                 }`}
@@ -97,12 +87,12 @@ export const TotalVisitsCard: React.FC<TotalVisitsCardProps> = ({ data }) => {
                 <div className="flex items-center gap-[9px]">
                   <span
                     className="w-[10px] h-[10px] rounded-[3px] shrink-0"
-                    style={{ backgroundColor: ch.color }}
+                    style={{ backgroundColor: m.color }}
                   />
-                  <span className="text-[11.5px] text-[#c8c8c4]">{ch.name}</span>
+                  <span className="text-[11.5px] text-[#c8c8c4]">{m.name}</span>
                 </div>
                 <span className="text-[11.5px] font-semibold text-[#f2f2f0] tabular-nums">
-                  {ch.formatted}
+                  {m.formatted}
                 </span>
               </div>
             );
@@ -114,8 +104,8 @@ export const TotalVisitsCard: React.FC<TotalVisitsCardProps> = ({ data }) => {
       <div className="relative w-[156px] h-[156px] flex items-center justify-center shrink-0 mr-[4px]">
         <svg width="156" height="156" viewBox="0 0 156 156">
           {segments.map((seg) => {
-            const isDimmed = hoveredChannel !== null && hoveredChannel !== seg.name;
-            if (orderedChannels.length === 1) {
+            const isDimmed = hoveredMethod !== null && hoveredMethod !== seg.name;
+            if (orderedMethods.length === 1) {
               return (
                 <circle
                   key={seg.name}
@@ -136,8 +126,8 @@ export const TotalVisitsCard: React.FC<TotalVisitsCardProps> = ({ data }) => {
                 stroke={seg.color}
                 strokeWidth="22"
                 strokeLinecap="butt"
-                onMouseEnter={() => setHoveredChannel(seg.name)}
-                onMouseLeave={() => setHoveredChannel(null)}
+                onMouseEnter={() => setHoveredMethod(seg.name)}
+                onMouseLeave={() => setHoveredMethod(null)}
                 className={`cursor-pointer transition-opacity duration-150 ${
                   isDimmed ? 'opacity-35' : 'opacity-100'
                 }`}
@@ -146,12 +136,11 @@ export const TotalVisitsCard: React.FC<TotalVisitsCardProps> = ({ data }) => {
           })}
         </svg>
 
-        {/* Donut Center Readout */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center px-4">
           <span className="text-[22px] font-semibold text-[#f3f3f1] leading-none tracking-[-0.02em] tabular-nums">
             {centerPercent}%
           </span>
-          <span className="text-[10.5px] text-[#888884] mt-[4px]">{centerLabel}</span>
+          <span className="text-[10.5px] text-[#888884] mt-[4px] leading-tight">{centerLabel}</span>
         </div>
       </div>
     </div>

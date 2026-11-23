@@ -2,64 +2,57 @@ import React from 'react';
 import { NavTab } from '../data/dashboardData';
 
 interface SecondaryViewProps {
-  tab: Exclude<NavTab, 'Dashboard'>;
+  tab: Exclude<NavTab, 'Dasbor'>;
   onBackToDashboard: () => void;
 }
 
 const VIEW_CONTENT: Record<
-  Exclude<NavTab, 'Dashboard'>,
+  Exclude<NavTab, 'Dasbor'>,
   { subtitle: string; rows: { col1: string; col2: string; col3: string; badge: string }[] }
 > = {
-  Orders: {
-    subtitle: '14 orders currently awaiting fulfillment across Online and Click & collect.',
+  Kasir: {
+    subtitle: 'Terminal Point of Sales Orpheus aktif untuk transaksi langsung di meja kasir.',
     rows: [
-      { col1: '#4894 — Apex Fabrication', col2: 'Online • 18 units', col3: '$2,140', badge: 'Ready to ship' },
-      { col1: '#4893 — Harbor Millwork', col2: 'Click & collect • 6 units', col3: '$680', badge: 'Awaiting pickup' },
-      { col1: '#4892 — Northline Builders', col2: 'Online • 24 units', col3: '$3,420', badge: 'Packing' },
-      { col1: '#4891 — Studio Kestrel', col2: 'In store • 4 units', col3: '$410', badge: 'Completed' },
+      { col1: 'Struk Aktif #POS-108', col2: '3 item • Pelanggan Umum', col3: '$248', badge: 'Siap bayar' },
+      { col1: 'Braket Orpheus Kokoh — Hitam Doff', col2: 'SKU-1042 • 2 unit', col3: '$34', badge: 'Dipindai' },
+      { col1: 'Pin Rak Kuningan Giling (Isi 20)', col2: 'SKU-2088 • 4 pak', col3: '$120', badge: 'Dipindai' },
+      { col1: 'Transaksi #4893 — Harbor Millwork', col2: 'Kasir 1 • Pembayaran QRIS lunas', col3: '$680', badge: 'Selesai' },
     ],
   },
-  Products: {
-    subtitle: '3,842 units sold month-to-date across architectural hardware and fasteners.',
+  Produk: {
+    subtitle: '3.842 unit terjual sepanjang bulan ini pada katalog perangkat keras Orpheus.',
     rows: [
-      { col1: 'Heavy Orpheus Bracket — Matte Black', col2: 'SKU-1042 • 842 sold', col3: '$14,314', badge: 'In stock' },
-      { col1: 'Milled Brass Shelf Pin (20-pack)', col2: 'SKU-2088 • 1,120 sold', col3: '$9,520', badge: 'Low stock' },
-      { col1: 'Concealed Steel Gusset 8"', col2: 'SKU-3115 • 618 sold', col3: '$11,124', badge: 'In stock' },
-      { col1: 'Anodized Aluminum Rail Kit', col2: 'SKU-4010 • 410 sold', col3: '$7,342', badge: 'In stock' },
+      { col1: 'Braket Orpheus Kokoh — Hitam Doff', col2: 'SKU-1042 • 842 terjual', col3: '$14.314', badge: 'Stok tersedia' },
+      { col1: 'Pin Rak Kuningan Giling (Isi 20)', col2: 'SKU-2088 • 1.120 terjual', col3: '$9.520', badge: 'Stok menipis' },
+      { col1: 'Gusset Baja Tersembunyi 8"', col2: 'SKU-3115 • 618 terjual', col3: '$11.124', badge: 'Stok tersedia' },
+      { col1: 'Kit Rel Aluminium Anodized', col2: 'SKU-4010 • 410 terjual', col3: '$7.342', badge: 'Stok tersedia' },
     ],
   },
-  Customers: {
-    subtitle: 'Active trade and retail accounts contributing to November 2026 volume.',
+  Transaksi: {
+    subtitle: 'Riwayat transaksi terbaru di seluruh terminal kasir Orpheus.',
     rows: [
-      { col1: 'Northline Builders Co.', col2: '42 orders YTD', col3: '$38,940', badge: 'Trade Pro' },
-      { col1: 'Harbor Millwork Studio', col2: '29 orders YTD', col3: '$24,180', badge: 'Trade Pro' },
-      { col1: 'Apex Fabrication LLC', col2: '19 orders YTD', col3: '$18,620', badge: 'Repeat' },
-      { col1: 'Kestrel Interior Group', col2: '14 orders YTD', col3: '$12,410', badge: 'Repeat' },
+      { col1: '#4894 — Apex Fabrication', col2: 'Kasir 1 • QRIS • 18 unit', col3: '$2.140', badge: 'Lunas' },
+      { col1: '#4893 — Harbor Millwork', col2: 'Kasir 2 • Kartu Debit • 6 unit', col3: '$680', badge: 'Lunas' },
+      { col1: '#4892 — Northline Builders', col2: 'Kasir 1 • QRIS • 24 unit', col3: '$3.420', badge: 'Lunas' },
+      { col1: '#4891 — Studio Kestrel', col2: 'Kasir 3 • Tunai • 4 unit', col3: '$410', badge: 'Selesai' },
     ],
   },
-  Messages: {
-    subtitle: '3 open customer inquiries assigned to the Orpheus support queue.',
+  Analisis: {
+    subtitle: 'Rincian lengkap alur transaksi kasir dan performa metode pembayaran November 2026.',
     rows: [
-      { col1: 'Northline Builders — Bulk lead time check', col2: 'Order #4892 • 12m ago', col3: 'MR', badge: 'Unread' },
-      { col1: 'Elena Vance — Pickup window change', col2: 'Order #4889 • 48m ago', col3: 'JO', badge: 'Unread' },
-      { col1: 'Studio Kestrel — Custom finish quote', col2: 'RFQ-119 • 2h ago', col3: 'AP', badge: 'Unread' },
+      { col1: 'Pemindaian Barang -> Subtotal Struk', col2: '214.860 struk diproses', col3: '98,4%', badge: '+1,2 poin' },
+      { col1: 'Pembayaran QRIS Instan', col2: '162.400 transaksi', col3: '75,6%', badge: '+3,4 poin' },
+      { col1: 'Pembayaran Kartu Debit/Kredit', col2: '41.440 transaksi', col3: '19,3%', badge: '+0,6 poin' },
+      { col1: 'Pembayaran Tunai di Kasir', col2: '11.020 transaksi', col3: '5,1%', badge: '-0,8 poin' },
     ],
   },
-  Analytics: {
-    subtitle: 'Full funnel and channel attribution breakdown for November 2026.',
+  Pengaturan: {
+    subtitle: 'Konfigurasi ruang kerja, mata uang, perangkat kasir, dan preferensi Orpheus.',
     rows: [
-      { col1: 'Storefront Sessions -> Product View', col2: '162,400 -> 94,190', col3: '58.0%', badge: '+2.4 pt' },
-      { col1: 'Product View -> Add to Cart', col2: '94,190 -> 18,838', col3: '20.0%', badge: '+0.8 pt' },
-      { col1: 'Checkout -> Completed Order', col2: '12,410 -> 7,795', col3: '62.8%', badge: '-0.2 pt' },
-      { col1: 'Click & Collect Fulfillment Rate', col2: '11,020 visits', col3: '96.4%', badge: '+1.1 pt' },
-    ],
-  },
-  Automations: {
-    subtitle: 'Active store workflows running for inventory alerts and cart recovery.',
-    rows: [
-      { col1: 'Abandoned Cart Recovery (2h delay)', col2: '184 recovered this month', col3: '$11,420', badge: 'Active' },
-      { col1: 'Low-Stock Trade Reorder Alert', col2: 'Threshold: < 40 units', col3: '12 triggers', badge: 'Active' },
-      { col1: 'Click & Collect Ready SMS', col2: '99.2% delivery rate', col3: '412 sent', badge: 'Active' },
+      { col1: 'Ruang Kerja Utama', col2: 'Orpheus Point of Sales', col3: 'Aktif', badge: 'Tersinkron' },
+      { col1: 'Mata Uang & Format Angka', col2: 'USD ($) • Standar pelaporan', col3: 'USD', badge: 'Default' },
+      { col1: 'Terminal Kasir & Struk Termal', col2: '3 perangkat meja kasir terhubung', col3: 'Siap', badge: 'Terhubung' },
+      { col1: 'Sinkronisasi Inventaris Otomatis', col2: 'Pembaruan real-time di seluruh terminal kasir', col3: 'Aktif', badge: 'Aktif' },
     ],
   },
 };
@@ -68,10 +61,10 @@ export const SecondaryView: React.FC<SecondaryViewProps> = ({ tab, onBackToDashb
   const content = VIEW_CONTENT[tab];
 
   return (
-    <div className="mt-[14px]">
-      <div className="flex items-center justify-between mb-[16px]">
+    <div className="pt-[4px]">
+      <div className="flex items-center justify-between mb-[18px]">
         <div>
-          <h1 className="text-[31px] font-semibold text-[#f3f3f1] tracking-[-0.025em] leading-none">
+          <h1 className="text-[30px] font-semibold text-[#f3f3f1] tracking-[-0.025em] leading-none">
             {tab}
           </h1>
           <p className="text-[12.5px] text-[#888884] mt-2">{content.subtitle}</p>
@@ -81,7 +74,7 @@ export const SecondaryView: React.FC<SecondaryViewProps> = ({ tab, onBackToDashb
           onClick={onBackToDashboard}
           className="rounded-full bg-[#ededeb] text-[#141414] px-4 py-2 text-[12px] font-semibold hover:bg-white transition-colors cursor-pointer"
         >
-          Back to Dashboard
+          Kembali ke Dasbor
         </button>
       </div>
 

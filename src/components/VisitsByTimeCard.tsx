@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
-import { ChannelDataset } from '../data/dashboardData';
+import { PeriodDataset } from '../data/dashboardData';
 import { InfoIcon } from './InfoIcon';
 
 interface VisitsByTimeCardProps {
-  data: ChannelDataset['heatmap'];
+  data: PeriodDataset['heatmap'];
 }
 
-const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-const TIME_SLOTS = ['12 AM – 8 AM', '8 AM – 12 PM', '12 PM – 4 PM', '4 PM – 12 AM'];
+const DAYS = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
+const TIME_SLOTS = ['00.00 – 08.00', '08.00 – 12.00', '12.00 – 16.00', '16.00 – 24.00'];
 
 const LEVEL_COLORS: Record<number, string> = {
   0: '#2d2d2b',
@@ -28,9 +28,9 @@ export const VisitsByTimeCard: React.FC<VisitsByTimeCardProps> = ({ data }) => {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <h2 className="text-[14.5px] font-medium text-[#f2f2f0] tracking-[-0.01em]">
-            Visits by time
+            Transaksi per waktu
           </h2>
-          <InfoIcon tooltip="Customer traffic intensity across dayparts and days of the week." />
+          <InfoIcon tooltip="Kepadatan transaksi kasir berdasarkan rentang jam dan hari dalam seminggu." />
         </div>
 
         {/* Scale Legend */}
@@ -43,14 +43,13 @@ export const VisitsByTimeCard: React.FC<VisitsByTimeCardProps> = ({ data }) => {
               style={{ backgroundColor: color }}
             />
           ))}
-          <span className="text-[10.5px] text-[#7a7a76] ml-[2px] tabular-nums">11k+</span>
+          <span className="text-[10.5px] text-[#7a7a76] ml-[2px] tabular-nums">11rb+</span>
         </div>
       </div>
 
       {/* Heatmap Matrix */}
       <div className="mt-[14px] flex flex-col gap-[7px]">
-        {/* Day Column Headers */}
-        <div className="grid grid-cols-[88px_repeat(7,minmax(0,1fr))] gap-[8px] items-center">
+        <div className="grid grid-cols-[92px_repeat(7,minmax(0,1fr))] gap-[8px] items-center">
           <div />
           {DAYS.map((day) => (
             <div key={day} className="text-center text-[11px] text-[#888884] font-normal">
@@ -59,11 +58,10 @@ export const VisitsByTimeCard: React.FC<VisitsByTimeCardProps> = ({ data }) => {
           ))}
         </div>
 
-        {/* 4 Time Rows */}
         {TIME_SLOTS.map((slot, rIdx) => (
           <div
             key={slot}
-            className="grid grid-cols-[88px_repeat(7,minmax(0,1fr))] gap-[8px] items-center"
+            className="grid grid-cols-[92px_repeat(7,minmax(0,1fr))] gap-[8px] items-center"
           >
             <div className="text-[10.5px] text-[#888884] whitespace-nowrap pr-1 tabular-nums">
               {slot}
@@ -86,9 +84,9 @@ export const VisitsByTimeCard: React.FC<VisitsByTimeCardProps> = ({ data }) => {
                   }}
                 >
                   {isHovered && (
-                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 z-40 whitespace-nowrap rounded-lg bg-[#252523] border border-white/10 px-2 py-1 text-[10.5px] text-[#f2f2f0] shadow-xl pointer-events-none tabular-nums">
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 z-40 whitespace-nowrap rounded-lg bg-[#252523] border border-white/10 px-2.5 py-1 text-[10.5px] text-[#f2f2f0] shadow-xl pointer-events-none tabular-nums">
                       <span className="font-semibold">{day}</span> • {slot}:{' '}
-                      <span className="font-semibold">{count.toLocaleString()}</span> visits
+                      <span className="font-semibold">{count.toLocaleString('id-ID')}</span> transaksi
                     </div>
                   )}
                 </div>

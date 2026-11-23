@@ -1,53 +1,38 @@
 export type NavTab =
-  | 'Dashboard'
-  | 'Orders'
-  | 'Products'
-  | 'Customers'
-  | 'Messages'
-  | 'Analytics'
-  | 'Automations';
+  | 'Dasbor'
+  | 'Kasir'
+  | 'Produk'
+  | 'Transaksi'
+  | 'Analisis'
+  | 'Pengaturan';
 
-export type ChannelFilter = 'Overview' | 'Online' | 'In store';
+export type PeriodFilter = 'Hari Ini' | '7 Hari' | '30 Hari';
+export type RevenueRange = '7 Hari' | '30 Hari';
 
-export interface MonthlyRevenuePoint {
-  month: string;
-  revenue: number; // in dollars
-  orders: number;
-  vsLastYear: string;
+export interface DailyRevenuePoint {
+  label: string;
+  fullLabel: string;
+  revenue: number;
+  transactions: number;
 }
 
-export interface ChannelDataset {
+export interface PeriodDataset {
   liveNow: string;
   kpis: {
-    activeSales: { value: string; delta: string; positive: boolean; bars: [number, number, number] };
-    revenue: { value: string; delta: string; positive: boolean; spark: number[] };
-    unitsSold: { value: string; delta: string; positive: boolean; percent: number };
-    conversionRate: { value: string; delta: string; positive: boolean; bars: number[] };
-  };
-  performance: {
-    score: number;
-    delta: string;
-    headline: string;
-    subtext: string;
-  };
-  revenueChart: {
-    ytd2026: string;
-    ytd2025: string;
-    avg2026: number;
-    avg2025: number;
-    data2026: MonthlyRevenuePoint[];
-    data2025: MonthlyRevenuePoint[];
+    activeSales: { value: string; bars: [number, number, number] };
+    revenue: { value: string; spark: number[] };
+    unitsSold: { value: string; percent: number };
+    conversionRate: { value: string; bars: number[] };
   };
   heatmap: {
-    levels: number[][]; // 4 rows x 7 cols (0..4)
-    counts: number[][]; // exact visit counts for hover
+    levels: number[][];
+    counts: number[][];
   };
-  totalVisits: {
+  totalTransactions: {
     total: string;
-    delta: string;
     highlightPercent: number;
     highlightLabel: string;
-    channels: {
+    methods: {
       name: string;
       count: number;
       formatted: string;
@@ -57,78 +42,99 @@ export interface ChannelDataset {
   };
 }
 
-export const CHANNEL_DATA: Record<ChannelFilter, ChannelDataset> = {
-  Overview: {
-    liveNow: '1,312',
+export const REVENUE_BY_RANGE: Record<
+  RevenueRange,
+  {
+    totalFormatted: string;
+    subtitle: string;
+    average: number;
+    yMax: number;
+    yTicks: number[];
+    defaultActiveIndex: number;
+    points: DailyRevenuePoint[];
+  }
+> = {
+  '7 Hari': {
+    totalFormatted: '$10.980',
+    subtitle: '7 hari terakhir',
+    average: 1568,
+    yMax: 2400,
+    yTicks: [2400, 1800, 1200, 600, 0],
+    defaultActiveIndex: 5,
+    points: [
+      { label: '17 Nov', fullLabel: 'Sel, 17 Nov 2026', revenue: 1240, transactions: 42 },
+      { label: '18 Nov', fullLabel: 'Rab, 18 Nov 2026', revenue: 1380, transactions: 48 },
+      { label: '19 Nov', fullLabel: 'Kam, 19 Nov 2026', revenue: 1510, transactions: 53 },
+      { label: '20 Nov', fullLabel: 'Jum, 20 Nov 2026', revenue: 1690, transactions: 61 },
+      { label: '21 Nov', fullLabel: 'Sab, 21 Nov 2026', revenue: 1940, transactions: 74 },
+      { label: '22 Nov', fullLabel: 'Min, 22 Nov 2026', revenue: 2040, transactions: 78 },
+      { label: '23 Nov', fullLabel: 'Sen, 23 Nov 2026', revenue: 1180, transactions: 39 },
+    ],
+  },
+  '30 Hari': {
+    totalFormatted: '$42.300',
+    subtitle: '30 hari terakhir',
+    average: 1410,
+    yMax: 2400,
+    yTicks: [2400, 1800, 1200, 600, 0],
+    defaultActiveIndex: 25,
+    points: [
+      { label: '25 Okt', fullLabel: '25 Okt 2026', revenue: 980, transactions: 31 },
+      { label: '26 Okt', fullLabel: '26 Okt 2026', revenue: 1120, transactions: 36 },
+      { label: '27 Okt', fullLabel: '27 Okt 2026', revenue: 1040, transactions: 33 },
+      { label: '28 Okt', fullLabel: '28 Okt 2026', revenue: 1210, transactions: 39 },
+      { label: '29 Okt', fullLabel: '29 Okt 2026', revenue: 1160, transactions: 37 },
+      { label: '30 Okt', fullLabel: '30 Okt 2026', revenue: 1340, transactions: 44 },
+      { label: '31 Okt', fullLabel: '31 Okt 2026', revenue: 1520, transactions: 51 },
+      { label: '1 Nov', fullLabel: '1 Nov 2026', revenue: 1480, transactions: 49 },
+      { label: '2 Nov', fullLabel: '2 Nov 2026', revenue: 1190, transactions: 38 },
+      { label: '3 Nov', fullLabel: '3 Nov 2026', revenue: 1260, transactions: 41 },
+      { label: '4 Nov', fullLabel: '4 Nov 2026', revenue: 1310, transactions: 43 },
+      { label: '5 Nov', fullLabel: '5 Nov 2026', revenue: 1390, transactions: 46 },
+      { label: '6 Nov', fullLabel: '6 Nov 2026', revenue: 1560, transactions: 54 },
+      { label: '7 Nov', fullLabel: '7 Nov 2026', revenue: 1740, transactions: 62 },
+      { label: '8 Nov', fullLabel: '8 Nov 2026', revenue: 1620, transactions: 57 },
+      { label: '9 Nov', fullLabel: '9 Nov 2026', revenue: 1280, transactions: 42 },
+      { label: '10 Nov', fullLabel: '10 Nov 2026', revenue: 1350, transactions: 45 },
+      { label: '11 Nov', fullLabel: '11 Nov 2026', revenue: 1420, transactions: 48 },
+      { label: '12 Nov', fullLabel: '12 Nov 2026', revenue: 1490, transactions: 50 },
+      { label: '13 Nov', fullLabel: '13 Nov 2026', revenue: 1640, transactions: 58 },
+      { label: '14 Nov', fullLabel: '14 Nov 2026', revenue: 1810, transactions: 66 },
+      { label: '15 Nov', fullLabel: '15 Nov 2026', revenue: 1680, transactions: 60 },
+      { label: '16 Nov', fullLabel: '16 Nov 2026', revenue: 1330, transactions: 44 },
+      { label: '17 Nov', fullLabel: '17 Nov 2026', revenue: 1240, transactions: 42 },
+      { label: '18 Nov', fullLabel: '18 Nov 2026', revenue: 1380, transactions: 48 },
+      { label: '19 Nov', fullLabel: '19 Nov 2026', revenue: 1980, transactions: 72 },
+      { label: '20 Nov', fullLabel: '20 Nov 2026', revenue: 1690, transactions: 61 },
+      { label: '21 Nov', fullLabel: '21 Nov 2026', revenue: 1940, transactions: 74 },
+      { label: '22 Nov', fullLabel: '22 Nov 2026', revenue: 2040, transactions: 78 },
+      { label: '23 Nov', fullLabel: '23 Nov 2026', revenue: 1180, transactions: 39 },
+    ],
+  },
+};
+
+export const PERIOD_DATA: Record<PeriodFilter, PeriodDataset> = {
+  '30 Hari': {
+    liveNow: '1.312',
     kpis: {
       activeSales: {
-        value: '$48,320',
-        delta: '14.2%',
-        positive: true,
+        value: '$48.320',
         bars: [0.58, 0.72, 1.0],
       },
       revenue: {
-        value: '$42,300',
-        delta: '7.1%',
-        positive: true,
+        value: '$42.300',
         spark: [12, 26, 22, 28, 30, 38],
       },
       unitsSold: {
-        value: '3,842',
-        delta: '6.4%',
-        positive: true,
+        value: '3.842',
         percent: 77,
       },
       conversionRate: {
-        value: '4.8%',
-        delta: '-0.2 pt',
-        positive: false,
+        value: '4,8%',
         bars: [0.42, 0.48, 0.45, 0.42, 0.56, 0.54, 0.48, 0.68],
       },
     },
-    performance: {
-      score: 86,
-      delta: '+3',
-      headline: 'Ahead of plan',
-      subtext: 'Both channels beat last month. Online did most of the lifting.',
-    },
-    revenueChart: {
-      ytd2026: '$342,300',
-      ytd2025: '$294,800',
-      avg2026: 31100,
-      avg2025: 26800,
-      data2026: [
-        { month: 'Jan', revenue: 18400, orders: 268, vsLastYear: '+9.4%' },
-        { month: 'Feb', revenue: 20600, orders: 294, vsLastYear: '+11.2%' },
-        { month: 'Mar', revenue: 25100, orders: 356, vsLastYear: '+14.8%' },
-        { month: 'Apr', revenue: 23400, orders: 331, vsLastYear: '+10.1%' },
-        { month: 'May', revenue: 28200, orders: 402, vsLastYear: '+15.6%' },
-        { month: 'Jun', revenue: 37800, orders: 528, vsLastYear: '+18.4%' },
-        { month: 'Jul', revenue: 33200, orders: 465, vsLastYear: '+12.9%' },
-        { month: 'Aug', revenue: 30400, orders: 429, vsLastYear: '+11.5%' },
-        { month: 'Sep', revenue: 35800, orders: 504, vsLastYear: '+17.2%' },
-        { month: 'Oct', revenue: 37900, orders: 534, vsLastYear: '+19.0%' },
-        { month: 'Nov', revenue: 42300, orders: 596, vsLastYear: '+21.2%' },
-        { month: 'Dec', revenue: 48600, orders: 682, vsLastYear: '+23.4%' },
-      ],
-      data2025: [
-        { month: 'Jan', revenue: 16800, orders: 240, vsLastYear: '+4.1%' },
-        { month: 'Feb', revenue: 18500, orders: 265, vsLastYear: '+5.8%' },
-        { month: 'Mar', revenue: 21900, orders: 312, vsLastYear: '+7.2%' },
-        { month: 'Apr', revenue: 21200, orders: 304, vsLastYear: '+6.0%' },
-        { month: 'May', revenue: 24400, orders: 348, vsLastYear: '+8.3%' },
-        { month: 'Jun', revenue: 31900, orders: 452, vsLastYear: '+11.4%' },
-        { month: 'Jul', revenue: 29400, orders: 416, vsLastYear: '+9.5%' },
-        { month: 'Aug', revenue: 27300, orders: 388, vsLastYear: '+8.1%' },
-        { month: 'Sep', revenue: 30500, orders: 432, vsLastYear: '+10.6%' },
-        { month: 'Oct', revenue: 31800, orders: 450, vsLastYear: '+12.2%' },
-        { month: 'Nov', revenue: 34900, orders: 492, vsLastYear: '+14.7%' },
-        { month: 'Dec', revenue: 39400, orders: 554, vsLastYear: '+16.5%' },
-      ],
-    },
     heatmap: {
-      // Exact visual levels matching reference screenshot:
-      // 0: #2e2e2c, 1: #4c4c4a, 2: #8a8a86, 3: #b8b8b4, 4: #ededeb
       levels: [
         [0, 0, 0, 0, 0, 0, 0],
         [2, 1, 2, 2, 1, 4, 4],
@@ -142,178 +148,81 @@ export const CHANNEL_DATA: Record<ChannelFilter, ChannelDataset> = {
         [11940, 12180, 12450, 12820, 13150, 7940, 13480],
       ],
     },
-    totalVisits: {
-      total: '214,860',
-      delta: '8.5%',
+    totalTransactions: {
+      total: '214.860',
       highlightPercent: 76,
-      highlightLabel: 'Website',
-      channels: [
-        { name: 'Website', count: 162400, formatted: '162,400', percent: 75.6, color: '#ededeb' },
-        { name: 'In store', count: 41440, formatted: '41,440', percent: 19.3, color: '#7a7a76' },
-        { name: 'Click & collect', count: 11020, formatted: '11,020', percent: 5.1, color: '#3e3e3c' },
+      highlightLabel: 'QRIS',
+      methods: [
+        { name: 'QRIS', count: 162400, formatted: '162.400', percent: 75.6, color: '#ededeb' },
+        { name: 'Kartu Debit/Kredit', count: 41440, formatted: '41.440', percent: 19.3, color: '#7a7a76' },
+        { name: 'Tunai', count: 11020, formatted: '11.020', percent: 5.1, color: '#3e3e3c' },
       ],
     },
   },
-  Online: {
-    liveNow: '1,048',
+  '7 Hari': {
+    liveNow: '1.048',
     kpis: {
       activeSales: {
-        value: '$35,180',
-        delta: '17.6%',
-        positive: true,
+        value: '$12.450',
         bars: [0.52, 0.68, 1.0],
       },
       revenue: {
-        value: '$31,420',
-        delta: '9.4%',
-        positive: true,
+        value: '$10.980',
         spark: [10, 20, 22, 27, 33, 40],
       },
       unitsSold: {
-        value: '2,914',
-        delta: '8.1%',
-        positive: true,
+        value: '964',
         percent: 82,
       },
       conversionRate: {
-        value: '4.4%',
-        delta: '+0.3 pt',
-        positive: true,
+        value: '5,1%',
         bars: [0.36, 0.44, 0.48, 0.50, 0.56, 0.60, 0.64, 0.76],
       },
-    },
-    performance: {
-      score: 91,
-      delta: '+5',
-      headline: 'Strong online momentum',
-      subtext: 'Checkout speed and mobile cart recovery drove higher order volume.',
-    },
-    revenueChart: {
-      ytd2026: '$256,800',
-      ytd2025: '$212,400',
-      avg2026: 23300,
-      avg2025: 19300,
-      data2026: [
-        { month: 'Jan', revenue: 13800, orders: 204, vsLastYear: '+12.1%' },
-        { month: 'Feb', revenue: 15400, orders: 224, vsLastYear: '+13.4%' },
-        { month: 'Mar', revenue: 18900, orders: 274, vsLastYear: '+16.8%' },
-        { month: 'Apr', revenue: 17500, orders: 251, vsLastYear: '+12.5%' },
-        { month: 'May', revenue: 21400, orders: 308, vsLastYear: '+18.2%' },
-        { month: 'Jun', revenue: 28600, orders: 412, vsLastYear: '+20.6%' },
-        { month: 'Jul', revenue: 25100, orders: 362, vsLastYear: '+15.4%' },
-        { month: 'Aug', revenue: 22900, orders: 332, vsLastYear: '+14.0%' },
-        { month: 'Sep', revenue: 27100, orders: 389, vsLastYear: '+19.8%' },
-        { month: 'Oct', revenue: 28800, orders: 414, vsLastYear: '+21.4%' },
-        { month: 'Nov', revenue: 31420, orders: 452, vsLastYear: '+24.1%' },
-        { month: 'Dec', revenue: 36900, orders: 528, vsLastYear: '+26.2%' },
-      ],
-      data2025: [
-        { month: 'Jan', revenue: 12300, orders: 182, vsLastYear: '+6.1%' },
-        { month: 'Feb', revenue: 13500, orders: 196, vsLastYear: '+7.4%' },
-        { month: 'Mar', revenue: 16200, orders: 236, vsLastYear: '+8.8%' },
-        { month: 'Apr', revenue: 15500, orders: 226, vsLastYear: '+7.5%' },
-        { month: 'May', revenue: 18100, orders: 262, vsLastYear: '+10.2%' },
-        { month: 'Jun', revenue: 23700, orders: 344, vsLastYear: '+12.6%' },
-        { month: 'Jul', revenue: 21700, orders: 314, vsLastYear: '+11.4%' },
-        { month: 'Aug', revenue: 20100, orders: 292, vsLastYear: '+10.0%' },
-        { month: 'Sep', revenue: 22600, orders: 328, vsLastYear: '+12.8%' },
-        { month: 'Oct', revenue: 23700, orders: 342, vsLastYear: '+14.4%' },
-        { month: 'Nov', revenue: 25300, orders: 366, vsLastYear: '+16.1%' },
-        { month: 'Dec', revenue: 29200, orders: 422, vsLastYear: '+18.2%' },
-      ],
     },
     heatmap: {
       levels: [
         [0, 0, 0, 0, 0, 0, 0],
-        [2, 1, 2, 2, 1, 4, 4],
-        [2, 2, 2, 2, 2, 4, 4],
-        [4, 4, 4, 4, 4, 2, 4],
+        [2, 1, 2, 2, 2, 4, 4],
+        [2, 2, 3, 2, 2, 4, 4],
+        [4, 4, 4, 4, 4, 3, 4],
       ],
       counts: [
-        [1220, 1100, 1340, 1290, 1180, 1490, 1520],
-        [5420, 3290, 5610, 5840, 3510, 9640, 9980],
-        [5810, 6020, 6190, 5940, 6340, 10240, 10510],
-        [10440, 10820, 11120, 11490, 11820, 6510, 12190],
+        [340, 310, 380, 360, 320, 410, 440],
+        [1640, 1020, 1710, 1790, 1580, 2940, 3120],
+        [1820, 1910, 2190, 1880, 1940, 3180, 3260],
+        [3140, 3220, 3350, 3420, 3580, 2410, 3690],
       ],
     },
-    totalVisits: {
-      total: '173,420',
-      delta: '10.2%',
-      highlightPercent: 94,
-      highlightLabel: 'Website',
-      channels: [
-        { name: 'Website', count: 162400, formatted: '162,400', percent: 93.6, color: '#ededeb' },
-        { name: 'Click & collect', count: 11020, formatted: '11,020', percent: 6.4, color: '#3e3e3c' },
+    totalTransactions: {
+      total: '54.210',
+      highlightPercent: 79,
+      highlightLabel: 'QRIS',
+      methods: [
+        { name: 'QRIS', count: 42826, formatted: '42.826', percent: 79.0, color: '#ededeb' },
+        { name: 'Kartu Debit/Kredit', count: 8674, formatted: '8.674', percent: 16.0, color: '#7a7a76' },
+        { name: 'Tunai', count: 2710, formatted: '2.710', percent: 5.0, color: '#3e3e3c' },
       ],
     },
   },
-  'In store': {
+  'Hari Ini': {
     liveNow: '264',
     kpis: {
       activeSales: {
-        value: '$13,140',
-        delta: '6.8%',
-        positive: true,
+        value: '$2.140',
         bars: [0.64, 0.78, 0.92],
       },
       revenue: {
-        value: '$10,880',
-        delta: '2.4%',
-        positive: true,
+        value: '$1.880',
         spark: [18, 22, 20, 24, 25, 29],
       },
       unitsSold: {
-        value: '928',
-        delta: '3.1%',
-        positive: true,
+        value: '168',
         percent: 68,
       },
       conversionRate: {
-        value: '6.2%',
-        delta: '-0.4 pt',
-        positive: false,
+        value: '6,2%',
         bars: [0.54, 0.52, 0.48, 0.44, 0.52, 0.50, 0.46, 0.62],
       },
-    },
-    performance: {
-      score: 79,
-      delta: '+1',
-      headline: 'Steady store traffic',
-      subtext: 'Weekend footfall remained high across flagship retail locations.',
-    },
-    revenueChart: {
-      ytd2026: '$85,500',
-      ytd2025: '$82,400',
-      avg2026: 7800,
-      avg2025: 7500,
-      data2026: [
-        { month: 'Jan', revenue: 4600, orders: 64, vsLastYear: '+3.1%' },
-        { month: 'Feb', revenue: 5200, orders: 70, vsLastYear: '+4.2%' },
-        { month: 'Mar', revenue: 6200, orders: 82, vsLastYear: '+6.4%' },
-        { month: 'Apr', revenue: 5900, orders: 80, vsLastYear: '+4.8%' },
-        { month: 'May', revenue: 6800, orders: 94, vsLastYear: '+7.2%' },
-        { month: 'Jun', revenue: 9200, orders: 116, vsLastYear: '+9.1%' },
-        { month: 'Jul', revenue: 8100, orders: 103, vsLastYear: '+5.8%' },
-        { month: 'Aug', revenue: 7500, orders: 97, vsLastYear: '+4.4%' },
-        { month: 'Sep', revenue: 8700, orders: 115, vsLastYear: '+8.2%' },
-        { month: 'Oct', revenue: 9100, orders: 120, vsLastYear: '+9.5%' },
-        { month: 'Nov', revenue: 10880, orders: 144, vsLastYear: '+11.4%' },
-        { month: 'Dec', revenue: 11700, orders: 154, vsLastYear: '+12.8%' },
-      ],
-      data2025: [
-        { month: 'Jan', revenue: 4500, orders: 58, vsLastYear: '+1.8%' },
-        { month: 'Feb', revenue: 5000, orders: 69, vsLastYear: '+2.4%' },
-        { month: 'Mar', revenue: 5700, orders: 76, vsLastYear: '+3.2%' },
-        { month: 'Apr', revenue: 5700, orders: 78, vsLastYear: '+2.9%' },
-        { month: 'May', revenue: 6300, orders: 86, vsLastYear: '+4.1%' },
-        { month: 'Jun', revenue: 8200, orders: 108, vsLastYear: '+6.0%' },
-        { month: 'Jul', revenue: 7700, orders: 102, vsLastYear: '+4.5%' },
-        { month: 'Aug', revenue: 7200, orders: 96, vsLastYear: '+3.8%' },
-        { month: 'Sep', revenue: 7900, orders: 104, vsLastYear: '+5.1%' },
-        { month: 'Oct', revenue: 8100, orders: 108, vsLastYear: '+5.9%' },
-        { month: 'Nov', revenue: 9600, orders: 126, vsLastYear: '+7.4%' },
-        { month: 'Dec', revenue: 10200, orders: 132, vsLastYear: '+8.2%' },
-      ],
     },
     heatmap: {
       levels: [
@@ -323,44 +232,45 @@ export const CHANNEL_DATA: Record<ChannelFilter, ChannelDataset> = {
         [2, 2, 2, 4, 4, 2, 4],
       ],
       counts: [
-        [200, 180, 170, 200, 180, 190, 220],
-        [1420, 830, 1340, 1340, 880, 1780, 1910],
-        [1400, 1430, 1430, 1440, 1550, 2100, 2100],
-        [1500, 1360, 1330, 1330, 1330, 1430, 1290],
+        [45, 38, 42, 49, 44, 52, 58],
+        [210, 165, 198, 224, 180, 390, 415],
+        [235, 240, 248, 252, 265, 440, 460],
+        [280, 275, 290, 410, 435, 310, 480],
       ],
     },
-    totalVisits: {
-      total: '41,440',
-      delta: '4.1%',
-      highlightPercent: 100,
-      highlightLabel: 'In store',
-      channels: [
-        { name: 'In store', count: 41440, formatted: '41,440', percent: 100, color: '#7a7a76' },
+    totalTransactions: {
+      total: '8.420',
+      highlightPercent: 72,
+      highlightLabel: 'QRIS',
+      methods: [
+        { name: 'QRIS', count: 6062, formatted: '6.062', percent: 72.0, color: '#ededeb' },
+        { name: 'Kartu Debit/Kredit', count: 1684, formatted: '1.684', percent: 20.0, color: '#7a7a76' },
+        { name: 'Tunai', count: 674, formatted: '674', percent: 8.0, color: '#3e3e3c' },
       ],
     },
   },
 };
 
-export function exportDashboardCsv(channel: ChannelFilter, year: '2025' | '2026') {
-  const dataset = CHANNEL_DATA[channel];
-  const rows = year === '2026' ? dataset.revenueChart.data2026 : dataset.revenueChart.data2025;
+export function exportDashboardCsv(period: PeriodFilter, revenueRange: RevenueRange) {
+  const dataset = PERIOD_DATA[period];
+  const rev = REVENUE_BY_RANGE[revenueRange];
   const lines = [
-    ['Orpheus - Dashboard Export', `Channel: ${channel}`, `Year: ${year}`].join(','),
-    ['Metric', 'Value', 'Change'].join(','),
-    ['Active sales', dataset.kpis.activeSales.value, dataset.kpis.activeSales.delta].join(','),
-    ['Revenue (MTD)', dataset.kpis.revenue.value, dataset.kpis.revenue.delta].join(','),
-    ['Units sold', dataset.kpis.unitsSold.value, dataset.kpis.unitsSold.delta].join(','),
-    ['Conversion rate', dataset.kpis.conversionRate.value, dataset.kpis.conversionRate.delta].join(','),
-    ['Total visits', dataset.totalVisits.total, dataset.totalVisits.delta].join(','),
+    ['Orpheus Point of Sales - Ekspor Dasbor', `Periode: ${period}`, `Grafik: ${revenueRange}`].join(','),
+    ['Metrik', 'Nilai'].join(','),
+    ['Penjualan Aktif', dataset.kpis.activeSales.value].join(','),
+    ['Pendapatan', dataset.kpis.revenue.value].join(','),
+    ['Unit Terjual', dataset.kpis.unitsSold.value].join(','),
+    ['Tingkat Konversi', dataset.kpis.conversionRate.value].join(','),
+    ['Total Transaksi', dataset.totalTransactions.total].join(','),
     '',
-    ['Month', 'Revenue ($)', 'Orders', 'vs Last Year'].join(','),
-    ...rows.map((r) => [r.month, r.revenue, r.orders, r.vsLastYear].join(',')),
+    ['Tanggal', 'Pendapatan ($)', 'Transaksi'].join(','),
+    ...rev.points.map((r) => [r.fullLabel, r.revenue, r.transactions].join(',')),
   ];
   const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = `orpheus-dashboard-${channel.toLowerCase().replace(/\s+/g, '-')}-${year}.csv`;
+  link.download = `orpheus-dasbor-${period.toLowerCase().replace(/\s+/g, '-')}.csv`;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
