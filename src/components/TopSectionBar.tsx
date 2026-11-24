@@ -75,32 +75,32 @@ export const TopSectionBar: React.FC<TopSectionBarProps> = ({
           </div>
         </button>
 
-        {/* Compact Search Pill beside Orpheus */}
+        {/* Compact High-Contrast White Search Pill with Dark Accents beside Orpheus */}
         <div className="relative">
           <button
             type="button"
             onClick={() => toggleMenu('search')}
-            className="h-[40px] w-[160px] sm:w-[205px] rounded-full bg-[#1e1e1c] border border-white/[0.06] pl-[14px] pr-[8px] flex items-center justify-between text-[#9e9e9a] hover:border-white/[0.15] hover:text-white transition-colors cursor-pointer"
+            className="h-[40px] w-[160px] sm:w-[205px] rounded-full bg-[#ededeb] hover:bg-white border-[1.5px] border-[#2a2a28] pl-[14px] pr-[7px] flex items-center justify-between text-[#141414] transition-colors cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.6),0_2px_8px_rgba(0,0,0,0.35)]"
           >
-            <span className="flex items-center gap-[8px] text-[12px]">
-              <Search className="w-[14px] h-[14px]" strokeWidth={1.7} />
+            <span className="flex items-center gap-[8px] text-[12px] font-medium text-[#141414]">
+              <Search className="w-[14px] h-[14px] text-[#141414]" strokeWidth={1.9} />
               <span>Cari</span>
             </span>
-            <span className="rounded-[7px] bg-[#262624] border border-white/[0.08] px-[6px] py-[2.5px] text-[10px] font-medium text-[#9e9e9a] leading-none">
+            <span className="rounded-full bg-[#1a1a18] border border-[#2f2f2c] px-[8px] py-[4px] text-[10px] font-semibold text-[#f2f2f0] leading-none">
               ⌘K
             </span>
           </button>
 
           {/* Popover: Search */}
           {openMenu === 'search' && (
-            <div className="absolute left-0 top-[54px] z-50 w-[290px] rounded-[16px] bg-[#20201e] border border-white/[0.09] p-3.5 shadow-2xl">
+            <div className="absolute left-0 top-[54px] z-50 w-[290px] rounded-[16px] bg-[#20201e] border border-white/[0.12] p-3.5 shadow-2xl">
               <input
                 type="text"
                 autoFocus
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Cari transaksi, SKU, atau kasir..."
-                className="w-full rounded-lg bg-[#161615] border border-white/[0.08] px-3 py-2 text-[12px] text-[#f2f2f0] placeholder-[#6e6e6a] focus:outline-none focus:border-white/25"
+                className="w-full rounded-lg bg-[#ededeb] border-[1.5px] border-[#2a2a28] px-3 py-2 text-[12px] font-medium text-[#141414] placeholder-[#686864] focus:outline-none focus:bg-white"
               />
               <div className="mt-2.5 space-y-1 text-[11px] text-[#8e8e8a]">
                 {searchQuery ? (
