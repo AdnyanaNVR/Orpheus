@@ -1,6 +1,5 @@
 import React from 'react';
 import { PeriodDataset, NavTab } from '../data/dashboardData';
-import { InfoIcon } from './InfoIcon';
 
 interface KpiCardsProps {
   data: PeriodDataset['kpis'];
@@ -32,11 +31,10 @@ export const KpiCards: React.FC<KpiCardsProps> = ({ data, onNavigate }) => {
       <div className="bg-[#f0f0ee] rounded-[20px] px-[20px] py-[16px] flex flex-col justify-between min-h-[126px] relative">
         <div className="flex items-center gap-1.5 text-[12px] font-medium text-[#2c2c2a]">
           <span>Penjualan aktif</span>
-          <InfoIcon variant="light" tooltip="Nilai transaksi aktif kotor sebelum pembatalan dan penyesuaian kasir." />
         </div>
 
-        <div className="flex items-center justify-between my-[6px]">
-          <div className="text-[27px] font-semibold text-[#141414] tracking-[-0.025em] leading-none tabular-nums">
+        <div className="flex items-center justify-between my-[6px] gap-2">
+          <div className="text-[24px] font-semibold text-[#141414] tracking-[-0.025em] leading-none tabular-nums">
             {data.activeSales.value}
           </div>
 
@@ -71,11 +69,10 @@ export const KpiCards: React.FC<KpiCardsProps> = ({ data, onNavigate }) => {
       <div className="bg-[#d6d6d2] rounded-[20px] px-[20px] py-[16px] flex flex-col justify-between min-h-[126px]">
         <div className="flex items-center gap-1.5 text-[12px] font-medium text-[#2c2c2a]">
           <span>Pendapatan</span>
-          <InfoIcon variant="light" tooltip="Pendapatan bersih yang diakui pada rentang waktu terpilih." />
         </div>
 
-        <div className="flex items-center justify-between my-[6px]">
-          <div className="text-[27px] font-semibold text-[#141414] tracking-[-0.025em] leading-none tabular-nums">
+        <div className="flex items-center justify-between my-[6px] gap-2">
+          <div className="text-[24px] font-semibold text-[#141414] tracking-[-0.025em] leading-none tabular-nums">
             {data.revenue.value}
           </div>
 
@@ -105,7 +102,6 @@ export const KpiCards: React.FC<KpiCardsProps> = ({ data, onNavigate }) => {
       <div className="bg-[#c2c2bd] rounded-[20px] px-[20px] py-[16px] flex flex-col justify-between min-h-[126px]">
         <div className="flex items-center gap-1.5 text-[12px] font-medium text-[#2c2c2a]">
           <span>Unit terjual</span>
-          <InfoIcon variant="light" tooltip="Total barang yang berhasil dipindai dan diselesaikan di kasir." />
         </div>
 
         <div className="flex items-center justify-between my-[6px]">
@@ -128,9 +124,6 @@ export const KpiCards: React.FC<KpiCardsProps> = ({ data, onNavigate }) => {
                 strokeDashoffset={dashOffset}
               />
             </svg>
-            <span className="absolute text-[9px] font-semibold text-[#141414] tabular-nums">
-              {data.unitsSold.percent}%
-            </span>
           </div>
         </div>
 
@@ -143,25 +136,24 @@ export const KpiCards: React.FC<KpiCardsProps> = ({ data, onNavigate }) => {
         </button>
       </div>
 
-      {/* Card 4: Tingkat Konversi */}
+      {/* Card 4: Transaksi Selesai */}
       <div className="bg-[#ababa6] rounded-[20px] px-[20px] py-[16px] flex flex-col justify-between min-h-[126px]">
         <div className="flex items-center gap-1.5 text-[12px] font-medium text-[#2c2c2a]">
-          <span>Tingkat konversi</span>
-          <InfoIcon variant="light" tooltip="Persentase pengunjung yang menyelesaikan transaksi pembayaran di kasir." />
+          <span>Transaksi selesai</span>
         </div>
 
         <div className="flex items-center justify-between my-[6px]">
           <div className="text-[27px] font-semibold text-[#141414] tracking-[-0.025em] leading-none tabular-nums">
-            {data.conversionRate.value}
+            {data.completedTransactions.value}
           </div>
 
           <svg width="60" height="36" viewBox="0 0 60 36" className="shrink-0">
-            {data.conversionRate.bars.map((ratio, idx) => {
+            {data.completedTransactions.bars.map((ratio, idx) => {
               const x = idx * 7.5 + 1;
               const maxH = 32;
               const barH = Math.round(ratio * maxH);
               const y = 34 - barH;
-              const isLast = idx === data.conversionRate.bars.length - 1;
+              const isLast = idx === data.completedTransactions.bars.length - 1;
               return (
                 <g key={idx}>
                   <rect x={x} y={2} width="4.2" height={maxH} rx="2" fill="rgba(0,0,0,0.08)" />
@@ -182,10 +174,10 @@ export const KpiCards: React.FC<KpiCardsProps> = ({ data, onNavigate }) => {
 
         <button
           type="button"
-          onClick={() => onNavigate('Analisis')}
+          onClick={() => onNavigate('Transaksi')}
           className="w-fit text-[11.5px] font-medium text-[#222220] underline underline-offset-[4px] decoration-[#5a5a56] hover:text-black cursor-pointer"
         >
-          Lihat konversi
+          Lihat transaksi
         </button>
       </div>
     </section>

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { PeriodDataset } from '../data/dashboardData';
-import { InfoIcon } from './InfoIcon';
 
 interface TotalVisitsCardProps {
   data: PeriodDataset['totalTransactions'];
@@ -63,7 +62,6 @@ export const TotalVisitsCard: React.FC<TotalVisitsCardProps> = ({ data }) => {
             <h2 className="text-[14.5px] font-medium text-[#f2f2f0] tracking-[-0.01em]">
               Total transaksi
             </h2>
-            <InfoIcon tooltip="Distribusi total transaksi selesai berdasarkan metode pembayaran di kasir." />
           </div>
 
           <div className="text-[28px] font-semibold text-[#f3f3f1] tracking-[-0.025em] leading-none mt-[12px] tabular-nums">

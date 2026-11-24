@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { PeriodDataset } from '../data/dashboardData';
-import { InfoIcon } from './InfoIcon';
 
 interface VisitsByTimeCardProps {
   data: PeriodDataset['heatmap'];
@@ -30,7 +29,6 @@ export const VisitsByTimeCard: React.FC<VisitsByTimeCardProps> = ({ data }) => {
           <h2 className="text-[14.5px] font-medium text-[#f2f2f0] tracking-[-0.01em]">
             Transaksi per waktu
           </h2>
-          <InfoIcon tooltip="Kepadatan transaksi kasir berdasarkan rentang jam dan hari dalam seminggu." />
         </div>
 
         {/* Scale Legend */}

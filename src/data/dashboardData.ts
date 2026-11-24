@@ -22,7 +22,7 @@ export interface PeriodDataset {
     activeSales: { value: string; bars: [number, number, number] };
     revenue: { value: string; spark: number[] };
     unitsSold: { value: string; percent: number };
-    conversionRate: { value: string; bars: number[] };
+    completedTransactions: { value: string; bars: number[] };
   };
   heatmap: {
     levels: number[][];
@@ -55,60 +55,60 @@ export const REVENUE_BY_RANGE: Record<
   }
 > = {
   '7 Hari': {
-    totalFormatted: '$10.980',
+    totalFormatted: 'Rp164.700.000',
     subtitle: '7 hari terakhir',
-    average: 1568,
-    yMax: 2400,
-    yTicks: [2400, 1800, 1200, 600, 0],
+    average: 23528571,
+    yMax: 36000000,
+    yTicks: [36000000, 27000000, 18000000, 9000000, 0],
     defaultActiveIndex: 5,
     points: [
-      { label: '17 Nov', fullLabel: 'Sel, 17 Nov 2026', revenue: 1240, transactions: 42 },
-      { label: '18 Nov', fullLabel: 'Rab, 18 Nov 2026', revenue: 1380, transactions: 48 },
-      { label: '19 Nov', fullLabel: 'Kam, 19 Nov 2026', revenue: 1510, transactions: 53 },
-      { label: '20 Nov', fullLabel: 'Jum, 20 Nov 2026', revenue: 1690, transactions: 61 },
-      { label: '21 Nov', fullLabel: 'Sab, 21 Nov 2026', revenue: 1940, transactions: 74 },
-      { label: '22 Nov', fullLabel: 'Min, 22 Nov 2026', revenue: 2040, transactions: 78 },
-      { label: '23 Nov', fullLabel: 'Sen, 23 Nov 2026', revenue: 1180, transactions: 39 },
+      { label: '17 Nov', fullLabel: 'Sel, 17 Nov 2026', revenue: 18600000, transactions: 42 },
+      { label: '18 Nov', fullLabel: 'Rab, 18 Nov 2026', revenue: 20700000, transactions: 48 },
+      { label: '19 Nov', fullLabel: 'Kam, 19 Nov 2026', revenue: 22650000, transactions: 53 },
+      { label: '20 Nov', fullLabel: 'Jum, 20 Nov 2026', revenue: 25350000, transactions: 61 },
+      { label: '21 Nov', fullLabel: 'Sab, 21 Nov 2026', revenue: 29100000, transactions: 74 },
+      { label: '22 Nov', fullLabel: 'Min, 22 Nov 2026', revenue: 30600000, transactions: 78 },
+      { label: '23 Nov', fullLabel: 'Sen, 23 Nov 2026', revenue: 17700000, transactions: 39 },
     ],
   },
   '30 Hari': {
-    totalFormatted: '$42.300',
+    totalFormatted: 'Rp634.500.000',
     subtitle: '30 hari terakhir',
-    average: 1410,
-    yMax: 2400,
-    yTicks: [2400, 1800, 1200, 600, 0],
+    average: 21150000,
+    yMax: 36000000,
+    yTicks: [36000000, 27000000, 18000000, 9000000, 0],
     defaultActiveIndex: 25,
     points: [
-      { label: '25 Okt', fullLabel: '25 Okt 2026', revenue: 980, transactions: 31 },
-      { label: '26 Okt', fullLabel: '26 Okt 2026', revenue: 1120, transactions: 36 },
-      { label: '27 Okt', fullLabel: '27 Okt 2026', revenue: 1040, transactions: 33 },
-      { label: '28 Okt', fullLabel: '28 Okt 2026', revenue: 1210, transactions: 39 },
-      { label: '29 Okt', fullLabel: '29 Okt 2026', revenue: 1160, transactions: 37 },
-      { label: '30 Okt', fullLabel: '30 Okt 2026', revenue: 1340, transactions: 44 },
-      { label: '31 Okt', fullLabel: '31 Okt 2026', revenue: 1520, transactions: 51 },
-      { label: '1 Nov', fullLabel: '1 Nov 2026', revenue: 1480, transactions: 49 },
-      { label: '2 Nov', fullLabel: '2 Nov 2026', revenue: 1190, transactions: 38 },
-      { label: '3 Nov', fullLabel: '3 Nov 2026', revenue: 1260, transactions: 41 },
-      { label: '4 Nov', fullLabel: '4 Nov 2026', revenue: 1310, transactions: 43 },
-      { label: '5 Nov', fullLabel: '5 Nov 2026', revenue: 1390, transactions: 46 },
-      { label: '6 Nov', fullLabel: '6 Nov 2026', revenue: 1560, transactions: 54 },
-      { label: '7 Nov', fullLabel: '7 Nov 2026', revenue: 1740, transactions: 62 },
-      { label: '8 Nov', fullLabel: '8 Nov 2026', revenue: 1620, transactions: 57 },
-      { label: '9 Nov', fullLabel: '9 Nov 2026', revenue: 1280, transactions: 42 },
-      { label: '10 Nov', fullLabel: '10 Nov 2026', revenue: 1350, transactions: 45 },
-      { label: '11 Nov', fullLabel: '11 Nov 2026', revenue: 1420, transactions: 48 },
-      { label: '12 Nov', fullLabel: '12 Nov 2026', revenue: 1490, transactions: 50 },
-      { label: '13 Nov', fullLabel: '13 Nov 2026', revenue: 1640, transactions: 58 },
-      { label: '14 Nov', fullLabel: '14 Nov 2026', revenue: 1810, transactions: 66 },
-      { label: '15 Nov', fullLabel: '15 Nov 2026', revenue: 1680, transactions: 60 },
-      { label: '16 Nov', fullLabel: '16 Nov 2026', revenue: 1330, transactions: 44 },
-      { label: '17 Nov', fullLabel: '17 Nov 2026', revenue: 1240, transactions: 42 },
-      { label: '18 Nov', fullLabel: '18 Nov 2026', revenue: 1380, transactions: 48 },
-      { label: '19 Nov', fullLabel: '19 Nov 2026', revenue: 1980, transactions: 72 },
-      { label: '20 Nov', fullLabel: '20 Nov 2026', revenue: 1690, transactions: 61 },
-      { label: '21 Nov', fullLabel: '21 Nov 2026', revenue: 1940, transactions: 74 },
-      { label: '22 Nov', fullLabel: '22 Nov 2026', revenue: 2040, transactions: 78 },
-      { label: '23 Nov', fullLabel: '23 Nov 2026', revenue: 1180, transactions: 39 },
+      { label: '25 Okt', fullLabel: '25 Okt 2026', revenue: 14700000, transactions: 31 },
+      { label: '26 Okt', fullLabel: '26 Okt 2026', revenue: 16800000, transactions: 36 },
+      { label: '27 Okt', fullLabel: '27 Okt 2026', revenue: 15600000, transactions: 33 },
+      { label: '28 Okt', fullLabel: '28 Okt 2026', revenue: 18150000, transactions: 39 },
+      { label: '29 Okt', fullLabel: '29 Okt 2026', revenue: 17400000, transactions: 37 },
+      { label: '30 Okt', fullLabel: '30 Okt 2026', revenue: 20100000, transactions: 44 },
+      { label: '31 Okt', fullLabel: '31 Okt 2026', revenue: 22800000, transactions: 51 },
+      { label: '1 Nov', fullLabel: '1 Nov 2026', revenue: 22200000, transactions: 49 },
+      { label: '2 Nov', fullLabel: '2 Nov 2026', revenue: 17850000, transactions: 38 },
+      { label: '3 Nov', fullLabel: '3 Nov 2026', revenue: 18900000, transactions: 41 },
+      { label: '4 Nov', fullLabel: '4 Nov 2026', revenue: 19650000, transactions: 43 },
+      { label: '5 Nov', fullLabel: '5 Nov 2026', revenue: 20850000, transactions: 46 },
+      { label: '6 Nov', fullLabel: '6 Nov 2026', revenue: 23400000, transactions: 54 },
+      { label: '7 Nov', fullLabel: '7 Nov 2026', revenue: 26100000, transactions: 62 },
+      { label: '8 Nov', fullLabel: '8 Nov 2026', revenue: 24300000, transactions: 57 },
+      { label: '9 Nov', fullLabel: '9 Nov 2026', revenue: 19200000, transactions: 42 },
+      { label: '10 Nov', fullLabel: '10 Nov 2026', revenue: 20250000, transactions: 45 },
+      { label: '11 Nov', fullLabel: '11 Nov 2026', revenue: 21300000, transactions: 48 },
+      { label: '12 Nov', fullLabel: '12 Nov 2026', revenue: 22350000, transactions: 50 },
+      { label: '13 Nov', fullLabel: '13 Nov 2026', revenue: 24600000, transactions: 58 },
+      { label: '14 Nov', fullLabel: '14 Nov 2026', revenue: 27150000, transactions: 66 },
+      { label: '15 Nov', fullLabel: '15 Nov 2026', revenue: 25200000, transactions: 60 },
+      { label: '16 Nov', fullLabel: '16 Nov 2026', revenue: 19950000, transactions: 44 },
+      { label: '17 Nov', fullLabel: '17 Nov 2026', revenue: 18600000, transactions: 42 },
+      { label: '18 Nov', fullLabel: '18 Nov 2026', revenue: 20700000, transactions: 48 },
+      { label: '19 Nov', fullLabel: '19 Nov 2026', revenue: 29700000, transactions: 72 },
+      { label: '20 Nov', fullLabel: '20 Nov 2026', revenue: 25350000, transactions: 61 },
+      { label: '21 Nov', fullLabel: '21 Nov 2026', revenue: 29100000, transactions: 74 },
+      { label: '22 Nov', fullLabel: '22 Nov 2026', revenue: 30600000, transactions: 78 },
+      { label: '23 Nov', fullLabel: '23 Nov 2026', revenue: 17700000, transactions: 39 },
     ],
   },
 };
@@ -118,19 +118,19 @@ export const PERIOD_DATA: Record<PeriodFilter, PeriodDataset> = {
     liveNow: '1.312',
     kpis: {
       activeSales: {
-        value: '$48.320',
+        value: 'Rp724.800.000',
         bars: [0.58, 0.72, 1.0],
       },
       revenue: {
-        value: '$42.300',
+        value: 'Rp634.500.000',
         spark: [12, 26, 22, 28, 30, 38],
       },
       unitsSold: {
         value: '3.842',
         percent: 77,
       },
-      conversionRate: {
-        value: '4,8%',
+      completedTransactions: {
+        value: '1.488',
         bars: [0.42, 0.48, 0.45, 0.42, 0.56, 0.54, 0.48, 0.68],
       },
     },
@@ -163,19 +163,19 @@ export const PERIOD_DATA: Record<PeriodFilter, PeriodDataset> = {
     liveNow: '1.048',
     kpis: {
       activeSales: {
-        value: '$12.450',
+        value: 'Rp186.750.000',
         bars: [0.52, 0.68, 1.0],
       },
       revenue: {
-        value: '$10.980',
+        value: 'Rp164.700.000',
         spark: [10, 20, 22, 27, 33, 40],
       },
       unitsSold: {
         value: '964',
         percent: 82,
       },
-      conversionRate: {
-        value: '5,1%',
+      completedTransactions: {
+        value: '395',
         bars: [0.36, 0.44, 0.48, 0.50, 0.56, 0.60, 0.64, 0.76],
       },
     },
@@ -208,19 +208,19 @@ export const PERIOD_DATA: Record<PeriodFilter, PeriodDataset> = {
     liveNow: '264',
     kpis: {
       activeSales: {
-        value: '$2.140',
+        value: 'Rp32.100.000',
         bars: [0.64, 0.78, 0.92],
       },
       revenue: {
-        value: '$1.880',
+        value: 'Rp28.200.000',
         spark: [18, 22, 20, 24, 25, 29],
       },
       unitsSold: {
         value: '168',
         percent: 68,
       },
-      conversionRate: {
-        value: '6,2%',
+      completedTransactions: {
+        value: '48',
         bars: [0.54, 0.52, 0.48, 0.44, 0.52, 0.50, 0.46, 0.62],
       },
     },
@@ -260,10 +260,10 @@ export function exportDashboardCsv(period: PeriodFilter, revenueRange: RevenueRa
     ['Penjualan Aktif', dataset.kpis.activeSales.value].join(','),
     ['Pendapatan', dataset.kpis.revenue.value].join(','),
     ['Unit Terjual', dataset.kpis.unitsSold.value].join(','),
-    ['Tingkat Konversi', dataset.kpis.conversionRate.value].join(','),
+    ['Transaksi Selesai', dataset.kpis.completedTransactions.value].join(','),
     ['Total Transaksi', dataset.totalTransactions.total].join(','),
     '',
-    ['Tanggal', 'Pendapatan ($)', 'Transaksi'].join(','),
+    ['Tanggal', 'Pendapatan (Rp)', 'Transaksi'].join(','),
     ...rev.points.map((r) => [r.fullLabel, r.revenue, r.transactions].join(',')),
   ];
   const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' });

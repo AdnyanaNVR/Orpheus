@@ -13,28 +13,28 @@ const VIEW_CONTENT: Record<
   Kasir: {
     subtitle: 'Terminal Point of Sales Orpheus aktif untuk transaksi langsung di meja kasir.',
     rows: [
-      { col1: 'Struk Aktif #POS-108', col2: '3 item • Pelanggan Umum', col3: '$248', badge: 'Siap bayar' },
-      { col1: 'Braket Orpheus Kokoh — Hitam Doff', col2: 'SKU-1042 • 2 unit', col3: '$34', badge: 'Dipindai' },
-      { col1: 'Pin Rak Kuningan Giling (Isi 20)', col2: 'SKU-2088 • 4 pak', col3: '$120', badge: 'Dipindai' },
-      { col1: 'Transaksi #4893 — Harbor Millwork', col2: 'Kasir 1 • Pembayaran QRIS lunas', col3: '$680', badge: 'Selesai' },
+      { col1: 'Struk Aktif #POS-108', col2: '3 item • Pelanggan Umum', col3: 'Rp3.720.000', badge: 'Siap bayar' },
+      { col1: 'Braket Orpheus Kokoh — Hitam Doff', col2: 'SKU-1042 • 2 unit', col3: 'Rp510.000', badge: 'Dipindai' },
+      { col1: 'Pin Rak Kuningan Giling (Isi 20)', col2: 'SKU-2088 • 4 pak', col3: 'Rp1.800.000', badge: 'Dipindai' },
+      { col1: 'Transaksi #4893 — Harbor Millwork', col2: 'Kasir 1 • Pembayaran QRIS lunas', col3: 'Rp10.200.000', badge: 'Selesai' },
     ],
   },
   Produk: {
     subtitle: '3.842 unit terjual sepanjang bulan ini pada katalog perangkat keras Orpheus.',
     rows: [
-      { col1: 'Braket Orpheus Kokoh — Hitam Doff', col2: 'SKU-1042 • 842 terjual', col3: '$14.314', badge: 'Stok tersedia' },
-      { col1: 'Pin Rak Kuningan Giling (Isi 20)', col2: 'SKU-2088 • 1.120 terjual', col3: '$9.520', badge: 'Stok menipis' },
-      { col1: 'Gusset Baja Tersembunyi 8"', col2: 'SKU-3115 • 618 terjual', col3: '$11.124', badge: 'Stok tersedia' },
-      { col1: 'Kit Rel Aluminium Anodized', col2: 'SKU-4010 • 410 terjual', col3: '$7.342', badge: 'Stok tersedia' },
+      { col1: 'Braket Orpheus Kokoh — Hitam Doff', col2: 'SKU-1042 • 842 terjual', col3: 'Rp214.710.000', badge: 'Stok tersedia' },
+      { col1: 'Pin Rak Kuningan Giling (Isi 20)', col2: 'SKU-2088 • 1.120 terjual', col3: 'Rp142.800.000', badge: 'Stok menipis' },
+      { col1: 'Gusset Baja Tersembunyi 8"', col2: 'SKU-3115 • 618 terjual', col3: 'Rp166.860.000', badge: 'Stok tersedia' },
+      { col1: 'Kit Rel Aluminium Anodized', col2: 'SKU-4010 • 410 terjual', col3: 'Rp110.130.000', badge: 'Stok tersedia' },
     ],
   },
   Transaksi: {
     subtitle: 'Riwayat transaksi terbaru di seluruh terminal kasir Orpheus.',
     rows: [
-      { col1: '#4894 — Apex Fabrication', col2: 'Kasir 1 • QRIS • 18 unit', col3: '$2.140', badge: 'Lunas' },
-      { col1: '#4893 — Harbor Millwork', col2: 'Kasir 2 • Kartu Debit • 6 unit', col3: '$680', badge: 'Lunas' },
-      { col1: '#4892 — Northline Builders', col2: 'Kasir 1 • QRIS • 24 unit', col3: '$3.420', badge: 'Lunas' },
-      { col1: '#4891 — Studio Kestrel', col2: 'Kasir 3 • Tunai • 4 unit', col3: '$410', badge: 'Selesai' },
+      { col1: '#4894 — Apex Fabrication', col2: 'Kasir 1 • QRIS • 18 unit', col3: 'Rp32.100.000', badge: 'Lunas' },
+      { col1: '#4893 — Harbor Millwork', col2: 'Kasir 2 • Kartu Debit • 6 unit', col3: 'Rp10.200.000', badge: 'Lunas' },
+      { col1: '#4892 — Northline Builders', col2: 'Kasir 1 • QRIS • 24 unit', col3: 'Rp51.300.000', badge: 'Lunas' },
+      { col1: '#4891 — Studio Kestrel', col2: 'Kasir 3 • Tunai • 4 unit', col3: 'Rp6.150.000', badge: 'Selesai' },
     ],
   },
   Analisis: {
@@ -50,7 +50,7 @@ const VIEW_CONTENT: Record<
     subtitle: 'Konfigurasi ruang kerja, mata uang, perangkat kasir, dan preferensi Orpheus.',
     rows: [
       { col1: 'Ruang Kerja Utama', col2: 'Orpheus Point of Sales', col3: 'Aktif', badge: 'Tersinkron' },
-      { col1: 'Mata Uang & Format Angka', col2: 'USD ($) • Standar pelaporan', col3: 'USD', badge: 'Default' },
+      { col1: 'Mata Uang & Format Angka', col2: 'Rupiah (Rp) • Standar pelaporan', col3: 'IDR', badge: 'Default' },
       { col1: 'Terminal Kasir & Struk Termal', col2: '3 perangkat meja kasir terhubung', col3: 'Siap', badge: 'Terhubung' },
       { col1: 'Sinkronisasi Inventaris Otomatis', col2: 'Pembaruan real-time di seluruh terminal kasir', col3: 'Aktif', badge: 'Aktif' },
     ],
