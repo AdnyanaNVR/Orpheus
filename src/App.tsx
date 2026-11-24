@@ -33,18 +33,18 @@ export default function App() {
 
   return (
     <div className="min-h-screen w-full bg-[#111110] text-[#f2f2f0] overflow-x-hidden">
-      {/* Main Content Shell aligned for 1664x936 desktop with left centered icon-only pill sidebar */}
-      <div className="relative w-full max-w-[1664px] mx-auto pl-[124px] pr-[52px] pt-[18px] pb-[20px]">
-        <SidebarNav activeTab={activeTab} onSelectTab={setActiveTab} />
+      <SidebarNav activeTab={activeTab} onSelectTab={setActiveTab} />
 
-        {/* Monochrome Top Pill Section */}
-        <TopSectionBar onNavigate={setActiveTab} />
+      {/* Monochrome Floating Top Pill matching center container width */}
+      <TopSectionBar onNavigate={setActiveTab} />
 
+      {/* Main Content Shell with equal 28px clearance from left navbar (88px) and right edge */}
+      <div className="relative w-full pl-[88px] sm:pl-[116px] pr-[16px] sm:pr-[28px] pt-[102px] pb-[20px]">
         {activeTab === 'Dasbor' ? (
           <main>
             {/* Title Row */}
             <div className="flex items-center justify-between">
-              <h1 className="text-[30px] font-semibold text-[#f3f3f1] tracking-[-0.025em] leading-none">
+              <h1 className="text-[40px] font-semibold text-[#f3f3f1] tracking-[-0.03em] leading-[1.05]">
                 Dasbor
               </h1>
             </div>
@@ -100,7 +100,7 @@ export default function App() {
             </div>
 
             {/* Row 2: Full-width Revenue Bar Chart (7 Hari / 30 Hari) */}
-            <div className="mt-[14px] h-[312px]">
+            <div className="mt-[14px] h-[292px]">
               <RevenueChartCard
                 range={revenueRange}
                 onRangeChange={setRevenueRange}
@@ -109,10 +109,10 @@ export default function App() {
 
             {/* Row 3: Transactions by Time Heatmap & Total Transactions Donut */}
             <div className="grid grid-cols-12 gap-[14px] mt-[14px]">
-              <div className="col-span-7 h-[240px]">
+              <div className="col-span-7 h-[236px]">
                 <VisitsByTimeCard data={dataset.heatmap} />
               </div>
-              <div className="col-span-5 h-[240px]">
+              <div className="col-span-5 h-[236px]">
                 <TotalVisitsCard data={dataset.totalTransactions} />
               </div>
             </div>

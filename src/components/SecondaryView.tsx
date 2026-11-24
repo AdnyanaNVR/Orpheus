@@ -64,7 +64,7 @@ export const SecondaryView: React.FC<SecondaryViewProps> = ({ tab, onBackToDashb
     <div className="pt-[4px]">
       <div className="flex items-center justify-between mb-[18px]">
         <div>
-          <h1 className="text-[30px] font-semibold text-[#f3f3f1] tracking-[-0.025em] leading-none">
+          <h1 className="text-[40px] font-semibold text-[#f3f3f1] tracking-[-0.03em] leading-[1.05]">
             {tab}
           </h1>
           <p className="text-[12.5px] text-[#888884] mt-2">{content.subtitle}</p>

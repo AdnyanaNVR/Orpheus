@@ -33,9 +33,9 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({ activeTab, onSelectTab }
   return (
     <aside
       aria-label="Menu Sidebar"
-      className="fixed left-[max(36px,calc(50vw-796px))] top-1/2 -translate-y-1/2 z-40"
+      className="fixed left-[12px] sm:left-[24px] top-1/2 -translate-y-1/2 z-40"
     >
-      <div className="w-[50px] rounded-full bg-[#20201e] border border-white/[0.06] py-[12px] flex flex-col items-center gap-[12px] shadow-lg">
+      <div className="w-[64px] rounded-full bg-[#1c1c1a]/95 backdrop-blur-md border border-white/[0.08] py-[16px] flex flex-col items-center gap-[14px] shadow-[0_14px_36px_rgba(0,0,0,0.55)]">
         {SIDEBAR_ITEMS.map((item, idx) => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;
@@ -44,7 +44,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({ activeTab, onSelectTab }
           return (
             <React.Fragment key={item.id}>
               {showDividerBefore && (
-                <div className="w-[22px] h-[1px] bg-[#31312f] -my-[2px]" />
+                <div className="w-[28px] h-[1px] bg-[#343431] -my-[2px]" />
               )}
               <div
                 className="relative flex items-center justify-center"
@@ -56,17 +56,17 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({ activeTab, onSelectTab }
                   onClick={() => onSelectTab(item.id)}
                   aria-label={item.label}
                   aria-current={isActive ? 'page' : undefined}
-                  className={`w-[34px] h-[34px] rounded-full flex items-center justify-center transition-colors cursor-pointer ${
+                  className={`w-[44px] h-[44px] rounded-full flex items-center justify-center transition-colors cursor-pointer ${
                     isActive
                       ? 'bg-[#ededeb] text-[#141414]'
                       : 'text-[#b5b5b0] hover:text-white hover:bg-white/[0.08]'
                   }`}
                 >
-                  <Icon className="w-[15.5px] h-[15.5px]" strokeWidth={isActive ? 2 : 1.7} />
+                  <Icon className="w-[19px] h-[19px]" strokeWidth={isActive ? 2 : 1.75} />
                 </button>
 
                 {hoveredItem === item.id && (
-                  <span className="absolute left-[46px] whitespace-nowrap rounded-full bg-[#252523] border border-white/[0.1] px-2.5 py-1 text-[11px] font-medium text-[#f2f2f0] shadow-xl pointer-events-none">
+                  <span className="absolute left-[58px] whitespace-nowrap rounded-full bg-[#252523] border border-white/[0.1] px-3 py-1.5 text-[11.5px] font-medium text-[#f2f2f0] shadow-xl pointer-events-none">
                     {item.label}
                   </span>
                 )}
