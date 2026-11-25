@@ -26,26 +26,28 @@ export const KpiCards: React.FC<KpiCardsProps> = ({ data, onNavigate }) => {
   const dashOffset = circ * (1 - data.unitsSold.percent / 100);
 
   return (
-    <section className="grid grid-cols-4 gap-[14px]">
+    <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-[14px]">
       {/* Card 1: Penjualan Aktif */}
-      <div className="bg-[#f0f0ee] rounded-[20px] px-[20px] py-[16px] flex flex-col justify-between min-h-[126px] relative">
-        <div className="flex items-center gap-1.5 text-[12px] font-medium text-[#2c2c2a]">
+      <div className="bg-[#f0f0ee] rounded-[22px] px-[20px] py-[17px] flex flex-col justify-between min-h-[148px] relative overflow-hidden">
+        <div className="flex items-center text-[12px] font-medium text-[#2c2c2a] whitespace-nowrap">
           <span>Penjualan aktif</span>
         </div>
 
-        <div className="flex items-center justify-between my-[6px] gap-2">
-          <div className="text-[24px] font-semibold text-[#141414] tracking-[-0.025em] leading-none tabular-nums">
+        <div className="flex items-center justify-between my-[10px] gap-2 min-w-0">
+          <div className="text-[21px] xl:text-[22px] 2xl:text-[24px] font-semibold text-[#141414] tracking-[-0.03em] leading-none tabular-nums whitespace-nowrap">
             {data.activeSales.value}
           </div>
 
-          <svg width="46" height="38" viewBox="0 0 46 38" className="shrink-0">
+          <svg width="42" height="38" viewBox="0 0 46 40" className="shrink-0">
             {data.activeSales.bars.map((ratio, idx) => {
-              const barH = Math.round(ratio * 34);
+              const maxH = 36;
+              const barH = Math.round(ratio * maxH);
               const x = idx * 15 + 2;
-              const y = 36 - barH;
+              const y = 38 - barH;
               const fills = ['#8f8f8b', '#7a7a76', '#182028'];
               return (
                 <g key={idx}>
+                  <rect x={x} y={2} width="10" height={maxH} rx="3.5" fill="rgba(0,0,0,0.06)" />
                   <rect x={x} y={y} width="10" height={barH} rx="3.5" fill={fills[idx]} />
                   {idx === 2 && (
                     <circle cx={x + 5} cy={y + 6} r="1.4" fill="#f0f0ee" />
@@ -56,27 +58,29 @@ export const KpiCards: React.FC<KpiCardsProps> = ({ data, onNavigate }) => {
           </svg>
         </div>
 
-        <button
-          type="button"
-          onClick={() => onNavigate('Transaksi')}
-          className="w-fit text-[11.5px] font-medium text-[#222220] underline underline-offset-[4px] decoration-[#6e6e6a] hover:text-black cursor-pointer"
-        >
-          Lihat transaksi
-        </button>
+        <div className="pt-[10px] border-t border-dashed border-black/[0.16]">
+          <button
+            type="button"
+            onClick={() => onNavigate('Transaksi')}
+            className="w-fit text-[11.5px] font-medium text-[#222220] underline underline-offset-[4px] decoration-[#6e6e6a] hover:text-black cursor-pointer whitespace-nowrap"
+          >
+            Lihat transaksi
+          </button>
+        </div>
       </div>
 
       {/* Card 2: Pendapatan */}
-      <div className="bg-[#d6d6d2] rounded-[20px] px-[20px] py-[16px] flex flex-col justify-between min-h-[126px]">
-        <div className="flex items-center gap-1.5 text-[12px] font-medium text-[#2c2c2a]">
+      <div className="bg-[#d6d6d2] rounded-[22px] px-[20px] py-[17px] flex flex-col justify-between min-h-[148px] overflow-hidden">
+        <div className="flex items-center text-[12px] font-medium text-[#2c2c2a] whitespace-nowrap">
           <span>Pendapatan</span>
         </div>
 
-        <div className="flex items-center justify-between my-[6px] gap-2">
-          <div className="text-[24px] font-semibold text-[#141414] tracking-[-0.025em] leading-none tabular-nums">
+        <div className="flex items-center justify-between my-[10px] gap-2 min-w-0">
+          <div className="text-[21px] xl:text-[22px] 2xl:text-[24px] font-semibold text-[#141414] tracking-[-0.03em] leading-none tabular-nums whitespace-nowrap">
             {data.revenue.value}
           </div>
 
-          <svg width="74" height="36" viewBox="0 0 74 34" className="shrink-0 overflow-visible">
+          <svg width="62" height="32" viewBox="0 0 74 34" className="shrink-0 overflow-visible">
             <defs>
               <linearGradient id="kpiSparkGrad" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="#1a2228" stopOpacity="0.22" />
@@ -89,23 +93,25 @@ export const KpiCards: React.FC<KpiCardsProps> = ({ data, onNavigate }) => {
           </svg>
         </div>
 
-        <button
-          type="button"
-          onClick={() => onNavigate('Analisis')}
-          className="w-fit text-[11.5px] font-medium text-[#222220] underline underline-offset-[4px] decoration-[#6e6e6a] hover:text-black cursor-pointer"
-        >
-          Lihat analisis
-        </button>
+        <div className="pt-[10px] border-t border-dashed border-black/[0.18]">
+          <button
+            type="button"
+            onClick={() => onNavigate('Analisis')}
+            className="w-fit text-[11.5px] font-medium text-[#222220] underline underline-offset-[4px] decoration-[#6e6e6a] hover:text-black cursor-pointer whitespace-nowrap"
+          >
+            Lihat analisis
+          </button>
+        </div>
       </div>
 
       {/* Card 3: Unit Terjual */}
-      <div className="bg-[#c2c2bd] rounded-[20px] px-[20px] py-[16px] flex flex-col justify-between min-h-[126px]">
-        <div className="flex items-center gap-1.5 text-[12px] font-medium text-[#2c2c2a]">
+      <div className="bg-[#c2c2bd] rounded-[22px] px-[20px] py-[17px] flex flex-col justify-between min-h-[148px] overflow-hidden">
+        <div className="flex items-center text-[12px] font-medium text-[#2c2c2a] whitespace-nowrap">
           <span>Unit terjual</span>
         </div>
 
-        <div className="flex items-center justify-between my-[6px]">
-          <div className="text-[27px] font-semibold text-[#141414] tracking-[-0.025em] leading-none tabular-nums">
+        <div className="flex items-center justify-between my-[10px] gap-2 min-w-0">
+          <div className="text-[24px] xl:text-[26px] font-semibold text-[#141414] tracking-[-0.03em] leading-none tabular-nums whitespace-nowrap">
             {data.unitsSold.value}
           </div>
 
@@ -127,27 +133,29 @@ export const KpiCards: React.FC<KpiCardsProps> = ({ data, onNavigate }) => {
           </div>
         </div>
 
-        <button
-          type="button"
-          onClick={() => onNavigate('Produk')}
-          className="w-fit text-[11.5px] font-medium text-[#222220] underline underline-offset-[4px] decoration-[#6e6e6a] hover:text-black cursor-pointer"
-        >
-          Lihat produk
-        </button>
+        <div className="pt-[10px] border-t border-dashed border-black/[0.18]">
+          <button
+            type="button"
+            onClick={() => onNavigate('Produk')}
+            className="w-fit text-[11.5px] font-medium text-[#222220] underline underline-offset-[4px] decoration-[#6e6e6a] hover:text-black cursor-pointer whitespace-nowrap"
+          >
+            Lihat produk
+          </button>
+        </div>
       </div>
 
       {/* Card 4: Transaksi Selesai */}
-      <div className="bg-[#ababa6] rounded-[20px] px-[20px] py-[16px] flex flex-col justify-between min-h-[126px]">
-        <div className="flex items-center gap-1.5 text-[12px] font-medium text-[#2c2c2a]">
+      <div className="bg-[#ababa6] rounded-[22px] px-[20px] py-[17px] flex flex-col justify-between min-h-[148px] overflow-hidden">
+        <div className="flex items-center text-[12px] font-medium text-[#2c2c2a] whitespace-nowrap">
           <span>Transaksi selesai</span>
         </div>
 
-        <div className="flex items-center justify-between my-[6px]">
-          <div className="text-[27px] font-semibold text-[#141414] tracking-[-0.025em] leading-none tabular-nums">
+        <div className="flex items-center justify-between my-[10px] gap-2 min-w-0">
+          <div className="text-[24px] xl:text-[26px] font-semibold text-[#141414] tracking-[-0.03em] leading-none tabular-nums whitespace-nowrap">
             {data.completedTransactions.value}
           </div>
 
-          <svg width="60" height="36" viewBox="0 0 60 36" className="shrink-0">
+          <svg width="56" height="34" viewBox="0 0 60 36" className="shrink-0">
             {data.completedTransactions.bars.map((ratio, idx) => {
               const x = idx * 7.5 + 1;
               const maxH = 32;
@@ -172,13 +180,15 @@ export const KpiCards: React.FC<KpiCardsProps> = ({ data, onNavigate }) => {
           </svg>
         </div>
 
-        <button
-          type="button"
-          onClick={() => onNavigate('Transaksi')}
-          className="w-fit text-[11.5px] font-medium text-[#222220] underline underline-offset-[4px] decoration-[#5a5a56] hover:text-black cursor-pointer"
-        >
-          Lihat transaksi
-        </button>
+        <div className="pt-[10px] border-t border-dashed border-black/[0.2]">
+          <button
+            type="button"
+            onClick={() => onNavigate('Transaksi')}
+            className="w-fit text-[11.5px] font-medium text-[#222220] underline underline-offset-[4px] decoration-[#5a5a56] hover:text-black cursor-pointer whitespace-nowrap"
+          >
+            Lihat transaksi
+          </button>
+        </div>
       </div>
     </section>
   );

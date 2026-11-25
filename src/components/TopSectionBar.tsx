@@ -63,13 +63,15 @@ export const TopSectionBar: React.FC<TopSectionBarProps> = ({
           }}
           className="flex items-center gap-[13px] text-left cursor-pointer group focus:outline-none shrink-0"
         >
-          <div className="w-[44px] h-[44px] rounded-full bg-[#ededeb] flex items-center justify-center shrink-0">
-            <svg width="17" height="17" viewBox="0 0 16 16" fill="none">
-              <path d="M3.5 3H13V6H8.8V8.8H6.2V13H3.5V3Z" fill="#141414" />
-            </svg>
+          <div className="w-[44px] h-[44px] rounded-full bg-white flex items-center justify-center shrink-0 overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.25)]">
+            <img
+              src="/logo.svg"
+              alt="Logo Orpheus"
+              className="w-[29px] h-[29px] object-contain brightness-0"
+            />
           </div>
           <div className="pr-1">
-            <div className="text-[16px] font-semibold text-[#f3f3f1] tracking-[-0.015em] group-hover:text-white transition-colors">
+            <div className="text-[15.5px] font-semibold text-[#f3f3f1] tracking-[-0.015em] group-hover:text-white transition-colors whitespace-nowrap">
               Orpheus
             </div>
           </div>
@@ -80,13 +82,13 @@ export const TopSectionBar: React.FC<TopSectionBarProps> = ({
           <button
             type="button"
             onClick={() => toggleMenu('search')}
-            className="h-[40px] w-[160px] sm:w-[205px] rounded-full bg-[#ededeb] hover:bg-white border-[1.5px] border-[#2a2a28] pl-[14px] pr-[7px] flex items-center justify-between text-[#141414] transition-colors cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.6),0_2px_8px_rgba(0,0,0,0.35)]"
+            className="h-[40px] w-[155px] sm:w-[205px] rounded-full bg-[#ededeb] hover:bg-white border-[1.5px] border-[#2a2a28] pl-[14px] pr-[7px] flex items-center justify-between text-[#141414] transition-colors cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.6),0_2px_8px_rgba(0,0,0,0.35)]"
           >
-            <span className="flex items-center gap-[8px] text-[12px] font-medium text-[#141414]">
-              <Search className="w-[14px] h-[14px] text-[#141414]" strokeWidth={1.9} />
+            <span className="flex items-center gap-[8px] text-[12px] font-medium text-[#141414] whitespace-nowrap">
+              <Search className="w-[14px] h-[14px] text-[#141414] shrink-0" strokeWidth={1.9} />
               <span>Cari</span>
             </span>
-            <span className="rounded-full bg-[#1a1a18] border border-[#2f2f2c] px-[8px] py-[4px] text-[10px] font-semibold text-[#f2f2f0] leading-none">
+            <span className="rounded-full bg-[#1a1a18] border border-[#2f2f2c] px-[8px] py-[4px] text-[10px] font-semibold text-[#f2f2f0] leading-none whitespace-nowrap shrink-0">
               ⌘K
             </span>
           </button>
@@ -139,8 +141,8 @@ export const TopSectionBar: React.FC<TopSectionBarProps> = ({
       {/* Right: Date Pill + Notification + Profile */}
       <div className="flex items-center gap-[10px] shrink-0">
         {/* Monochrome Date Pill beside Notification */}
-        <div className="h-[42px] rounded-full bg-[#1e1e1c] border border-white/[0.06] px-[14px] hidden md:flex items-center gap-[8px] text-[12px] font-medium text-[#d4d4d0] tabular-nums">
-          <Calendar className="w-[14px] h-[14px] text-[#9e9e9a]" strokeWidth={1.7} />
+        <div className="h-[42px] rounded-full bg-[#1e1e1c] border border-white/[0.06] px-[14px] hidden md:flex items-center gap-[8px] text-[12px] font-medium text-[#d4d4d0] tabular-nums whitespace-nowrap">
+          <Calendar className="w-[14px] h-[14px] text-[#9e9e9a] shrink-0" strokeWidth={1.7} />
           <span>{formattedDate}</span>
         </div>
 
@@ -193,10 +195,10 @@ export const TopSectionBar: React.FC<TopSectionBarProps> = ({
             <span className="w-[34px] h-[34px] rounded-full bg-[#d6d6d2] text-[#141414] text-[11.5px] font-semibold flex items-center justify-center shrink-0">
               MR
             </span>
-            <div className="text-left leading-tight">
-              <div className="text-[12.5px] font-semibold text-[#f2f2f0]">Maya Ross</div>
+            <div className="text-left leading-tight whitespace-nowrap">
+              <div className="text-[12px] font-semibold text-[#f2f2f0]">Maya Ross</div>
             </div>
-            <ChevronDown className="w-[14px] h-[14px] text-[#888884] ml-[2px]" strokeWidth={1.8} />
+            <ChevronDown className="w-[14px] h-[14px] text-[#888884] ml-[2px] shrink-0" strokeWidth={1.8} />
           </button>
 
           {/* Popover: Profile */}

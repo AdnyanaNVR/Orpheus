@@ -22,35 +22,35 @@ export const VisitsByTimeCard: React.FC<VisitsByTimeCardProps> = ({ data }) => {
   const [hoveredCell, setHoveredCell] = useState<{ r: number; c: number } | null>(null);
 
   return (
-    <div className="bg-[#171716] border border-white/[0.06] rounded-[20px] px-[22px] py-[18px] flex flex-col justify-between h-full">
+    <div className="bg-[#171716] border border-white/[0.06] rounded-[20px] px-[22px] py-[16px] flex flex-col justify-between h-full">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <h2 className="text-[14.5px] font-medium text-[#f2f2f0] tracking-[-0.01em]">
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 min-w-0">
+          <h2 className="text-[14px] font-medium text-[#f2f2f0] tracking-[-0.01em] whitespace-nowrap">
             Transaksi per waktu
           </h2>
         </div>
 
         {/* Scale Legend */}
-        <div className="flex items-center gap-[5px]">
-          <span className="text-[10.5px] text-[#7a7a76] mr-[2px] tabular-nums">0</span>
+        <div className="flex items-center gap-[5px] shrink-0">
+          <span className="text-[10px] text-[#7a7a76] mr-[2px] tabular-nums whitespace-nowrap">0</span>
           {LEGEND_SWATCHES.map((color, idx) => (
             <span
               key={idx}
-              className="w-[11px] h-[11px] rounded-[3px]"
+              className="w-[10.5px] h-[10.5px] rounded-[3px]"
               style={{ backgroundColor: color }}
             />
           ))}
-          <span className="text-[10.5px] text-[#7a7a76] ml-[2px] tabular-nums">11rb+</span>
+          <span className="text-[10px] text-[#7a7a76] ml-[2px] tabular-nums whitespace-nowrap">11rb+</span>
         </div>
       </div>
 
       {/* Heatmap Matrix */}
-      <div className="mt-[14px] flex flex-col gap-[7px]">
-        <div className="grid grid-cols-[92px_repeat(7,minmax(0,1fr))] gap-[8px] items-center">
+      <div className="mt-[10px] flex flex-col gap-[6px]">
+        <div className="grid grid-cols-[108px_repeat(7,minmax(0,1fr))] gap-[7px] items-center">
           <div />
           {DAYS.map((day) => (
-            <div key={day} className="text-center text-[11px] text-[#888884] font-normal">
+            <div key={day} className="text-center text-[10.5px] text-[#888884] font-normal whitespace-nowrap">
               {day}
             </div>
           ))}
@@ -59,9 +59,9 @@ export const VisitsByTimeCard: React.FC<VisitsByTimeCardProps> = ({ data }) => {
         {TIME_SLOTS.map((slot, rIdx) => (
           <div
             key={slot}
-            className="grid grid-cols-[92px_repeat(7,minmax(0,1fr))] gap-[8px] items-center"
+            className="grid grid-cols-[108px_repeat(7,minmax(0,1fr))] gap-[7px] items-center"
           >
-            <div className="text-[10.5px] text-[#888884] whitespace-nowrap pr-1 tabular-nums">
+            <div className="text-[10px] text-[#888884] whitespace-nowrap pr-1 tabular-nums">
               {slot}
             </div>
             {DAYS.map((day, cIdx) => {
@@ -75,7 +75,7 @@ export const VisitsByTimeCard: React.FC<VisitsByTimeCardProps> = ({ data }) => {
                   key={day}
                   onMouseEnter={() => setHoveredCell({ r: rIdx, c: cIdx })}
                   onMouseLeave={() => setHoveredCell(null)}
-                  className="relative h-[28px] rounded-[7px] transition-transform duration-150 cursor-pointer"
+                  className="relative h-[26px] rounded-[7px] transition-transform duration-150 cursor-pointer"
                   style={{
                     backgroundColor: bg,
                     transform: isHovered ? 'scale(1.03)' : 'scale(1)',

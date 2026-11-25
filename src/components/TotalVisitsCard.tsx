@@ -54,23 +54,23 @@ export const TotalVisitsCard: React.FC<TotalVisitsCardProps> = ({ data }) => {
   const centerLabel = activeMethod ? activeMethod.name : data.highlightLabel;
 
   return (
-    <div className="bg-[#171716] border border-white/[0.06] rounded-[20px] px-[22px] py-[18px] flex items-center justify-between h-full">
+    <div className="bg-[#171716] border border-white/[0.06] rounded-[20px] px-[22px] py-[16px] flex items-center justify-between gap-3 h-full overflow-hidden">
       {/* Left Column */}
-      <div className="flex flex-col justify-between h-full w-[55%]">
+      <div className="flex flex-col justify-between h-full flex-1 min-w-0 pr-2">
         <div>
           <div className="flex items-center gap-2">
-            <h2 className="text-[14.5px] font-medium text-[#f2f2f0] tracking-[-0.01em]">
+            <h2 className="text-[14px] font-medium text-[#f2f2f0] tracking-[-0.01em] whitespace-nowrap">
               Total transaksi
             </h2>
           </div>
 
-          <div className="text-[28px] font-semibold text-[#f3f3f1] tracking-[-0.025em] leading-none mt-[12px] tabular-nums">
+          <div className="text-[26px] xl:text-[28px] font-semibold text-[#f3f3f1] tracking-[-0.03em] leading-none mt-[10px] tabular-nums whitespace-nowrap">
             {data.total}
           </div>
         </div>
 
         {/* Payment Method Breakdown Rows */}
-        <div className="space-y-[8px] mt-[14px]">
+        <div className="space-y-[7px] mt-[10px]">
           {data.methods.map((m) => {
             const isDimmed = hoveredMethod !== null && hoveredMethod !== m.name;
             return (
@@ -78,18 +78,18 @@ export const TotalVisitsCard: React.FC<TotalVisitsCardProps> = ({ data }) => {
                 key={m.name}
                 onMouseEnter={() => setHoveredMethod(m.name)}
                 onMouseLeave={() => setHoveredMethod(null)}
-                className={`flex items-center justify-between cursor-pointer transition-opacity ${
+                className={`flex items-center justify-between gap-3 cursor-pointer transition-opacity ${
                   isDimmed ? 'opacity-45' : 'opacity-100'
                 }`}
               >
-                <div className="flex items-center gap-[9px]">
+                <div className="flex items-center gap-[8px] min-w-0">
                   <span
                     className="w-[10px] h-[10px] rounded-[3px] shrink-0"
                     style={{ backgroundColor: m.color }}
                   />
-                  <span className="text-[11.5px] text-[#c8c8c4]">{m.name}</span>
+                  <span className="text-[11px] text-[#c8c8c4] whitespace-nowrap">{m.name}</span>
                 </div>
-                <span className="text-[11.5px] font-semibold text-[#f2f2f0] tabular-nums">
+                <span className="text-[11px] font-semibold text-[#f2f2f0] tabular-nums whitespace-nowrap shrink-0">
                   {m.formatted}
                 </span>
               </div>
@@ -99,8 +99,8 @@ export const TotalVisitsCard: React.FC<TotalVisitsCardProps> = ({ data }) => {
       </div>
 
       {/* Right Column: Segmented Donut */}
-      <div className="relative w-[156px] h-[156px] flex items-center justify-center shrink-0 mr-[4px]">
-        <svg width="156" height="156" viewBox="0 0 156 156">
+      <div className="relative w-[144px] h-[144px] flex items-center justify-center shrink-0">
+        <svg viewBox="0 0 156 156" className="w-full h-full">
           {segments.map((seg) => {
             const isDimmed = hoveredMethod !== null && hoveredMethod !== seg.name;
             if (orderedMethods.length === 1) {
@@ -134,11 +134,11 @@ export const TotalVisitsCard: React.FC<TotalVisitsCardProps> = ({ data }) => {
           })}
         </svg>
 
-        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center px-4">
-          <span className="text-[22px] font-semibold text-[#f3f3f1] leading-none tracking-[-0.02em] tabular-nums">
+        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center px-5">
+          <span className="text-[20px] font-semibold text-[#f3f3f1] leading-none tracking-[-0.02em] tabular-nums whitespace-nowrap">
             {centerPercent}%
           </span>
-          <span className="text-[10.5px] text-[#888884] mt-[4px] leading-tight">{centerLabel}</span>
+          <span className="text-[9.5px] text-[#888884] mt-[4px] leading-tight">{centerLabel}</span>
         </div>
       </div>
     </div>

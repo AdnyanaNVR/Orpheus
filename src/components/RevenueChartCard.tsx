@@ -90,18 +90,18 @@ export const RevenueChartCard: React.FC<RevenueChartCardProps> = ({
   return (
     <div className="bg-[#171716] border border-white/[0.06] rounded-[20px] px-[22px] py-[18px] flex flex-col justify-between h-full">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <h2 className="text-[14.5px] font-medium text-[#f2f2f0] tracking-[-0.01em]">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2 min-w-0">
+          <h2 className="text-[14px] font-medium text-[#f2f2f0] tracking-[-0.01em] whitespace-nowrap">
             Pendapatan
           </h2>
-          <span className="text-[11.5px] text-[#888884] ml-1 tabular-nums">
+          <span className="text-[11px] text-[#888884] ml-1 tabular-nums whitespace-nowrap truncate">
             {config.totalFormatted} dalam {config.subtitle}
           </span>
         </div>
 
         {/* 7 Hari / 30 Hari Toggle */}
-        <div className="flex items-center bg-[#232321] border border-white/[0.05] rounded-full p-[3px]">
+        <div className="flex items-center bg-[#232321] border border-white/[0.05] rounded-full p-[3px] shrink-0">
           {(['7 Hari', '30 Hari'] as const).map((r) => {
             const isActive = range === r;
             return (
@@ -109,7 +109,7 @@ export const RevenueChartCard: React.FC<RevenueChartCardProps> = ({
                 key={r}
                 type="button"
                 onClick={() => onRangeChange(r)}
-                className={`px-[12px] py-[4px] rounded-full text-[11px] transition-colors cursor-pointer ${
+                className={`px-[12px] py-[4px] rounded-full text-[11px] transition-colors cursor-pointer whitespace-nowrap ${
                   isActive
                     ? 'bg-[#484846] text-[#f2f2f0] font-medium'
                     : 'text-[#8a8a86] hover:text-[#d4d4d0]'
@@ -123,11 +123,11 @@ export const RevenueChartCard: React.FC<RevenueChartCardProps> = ({
       </div>
 
       {/* Chart Area */}
-      <div className="relative flex mt-[16px] flex-1 min-h-[232px]">
+      <div className="relative flex mt-[14px] flex-1 min-h-0">
         {/* Y-axis Labels */}
-        <div className="flex flex-col justify-between pr-[14px] pb-[22px] pt-[2px] text-right select-none shrink-0 w-[52px]">
+        <div className="flex flex-col justify-between pr-[12px] pb-[22px] pt-[2px] text-right select-none shrink-0 w-[68px]">
           {config.yTicks.map((tick) => (
-            <span key={tick} className="text-[10.5px] text-[#767672] leading-none tabular-nums">
+            <span key={tick} className="text-[10px] text-[#767672] leading-none tabular-nums whitespace-nowrap">
               {formatTick(tick)}
             </span>
           ))}
@@ -135,10 +135,10 @@ export const RevenueChartCard: React.FC<RevenueChartCardProps> = ({
 
         {/* Plot Canvas */}
         <div
-          className="relative flex-1 flex flex-col"
+          className="relative flex-1 flex flex-col min-w-0"
           onMouseLeave={handlePlotLeave}
         >
-          <div className="relative flex-1">
+          <div className="relative flex-1 min-h-0">
             {/* Horizontal Grid Lines */}
             <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
               {config.yTicks.map((tick) => (
@@ -198,7 +198,7 @@ export const RevenueChartCard: React.FC<RevenueChartCardProps> = ({
 
             {/* Smooth Floating Tooltip Card (never unmounts mid-hover, fades & glides smoothly) */}
             <div
-              className={`absolute z-30 w-[204px] rounded-[14px] bg-[#ededeb] text-[#141414] px-[14px] py-[11px] shadow-[0_14px_34px_rgba(0,0,0,0.55)] pointer-events-none transition-[opacity,transform,left,bottom] duration-200 ease-out ${
+              className={`absolute z-30 w-[224px] rounded-[14px] bg-[#ededeb] text-[#141414] px-[14px] py-[11px] shadow-[0_14px_34px_rgba(0,0,0,0.55)] pointer-events-none transition-[opacity,transform,left,bottom] duration-200 ease-out ${
                 isTooltipVisible
                   ? 'opacity-100 translate-y-0 scale-100'
                   : 'opacity-0 translate-y-[6px] scale-[0.97]'
@@ -208,19 +208,19 @@ export const RevenueChartCard: React.FC<RevenueChartCardProps> = ({
                 bottom: `${tooltipBottomPercent}%`,
               }}
             >
-              <div className="text-[12px] font-semibold text-[#141414] mb-[8px]">
+              <div className="text-[12px] font-semibold text-[#141414] mb-[8px] whitespace-nowrap">
                 {displayPoint.fullLabel}
               </div>
               <div className="space-y-[4px] text-[11px]">
                 <div className="flex items-center justify-between gap-3">
-                  <span className="text-[#6a6a66]">Pendapatan</span>
-                  <span className="font-semibold text-[#141414] tabular-nums">
+                  <span className="text-[#6a6a66] whitespace-nowrap">Pendapatan</span>
+                  <span className="font-semibold text-[#141414] tabular-nums whitespace-nowrap">
                     Rp{displayPoint.revenue.toLocaleString('id-ID')}
                   </span>
                 </div>
                 <div className="flex items-center justify-between gap-3">
-                  <span className="text-[#6a6a66]">Transaksi</span>
-                  <span className="font-semibold text-[#141414] tabular-nums">
+                  <span className="text-[#6a6a66] whitespace-nowrap">Transaksi</span>
+                  <span className="font-semibold text-[#141414] tabular-nums whitespace-nowrap">
                     {displayPoint.transactions.toLocaleString('id-ID')}
                   </span>
                 </div>
