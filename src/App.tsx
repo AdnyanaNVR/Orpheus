@@ -14,6 +14,7 @@ import { VisitsByTimeCard } from './components/VisitsByTimeCard';
 import { TotalVisitsCard } from './components/TotalVisitsCard';
 import { KasirView } from './components/KasirView';
 import { ProdukView } from './components/ProdukView';
+import { TransaksiView } from './components/TransaksiView';
 import { SecondaryView } from './components/SecondaryView';
 
 const PERIOD_FILTERS: PeriodFilter[] = ['Hari Ini', '7 Hari', '30 Hari'];
@@ -113,6 +114,8 @@ export default function App() {
           <KasirView />
         ) : activeTab === 'Produk' ? (
           <ProdukView />
+        ) : activeTab === 'Transaksi' ? (
+          <TransaksiView />
         ) : (
           <SecondaryView
             tab={activeTab}

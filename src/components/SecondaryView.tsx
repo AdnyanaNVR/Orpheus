@@ -2,23 +2,14 @@ import React from 'react';
 import { NavTab } from '../data/dashboardData';
 
 interface SecondaryViewProps {
-  tab: Exclude<NavTab, 'Dasbor' | 'Kasir' | 'Produk'>;
+  tab: Exclude<NavTab, 'Dasbor' | 'Kasir' | 'Produk' | 'Transaksi'>;
   onBackToDashboard: () => void;
 }
 
 const VIEW_CONTENT: Record<
-  Exclude<NavTab, 'Dasbor' | 'Kasir' | 'Produk'>,
+  Exclude<NavTab, 'Dasbor' | 'Kasir' | 'Produk' | 'Transaksi'>,
   { subtitle: string; rows: { col1: string; col2: string; col3: string; badge: string }[] }
 > = {
-  Transaksi: {
-    subtitle: 'Riwayat transaksi terbaru di seluruh terminal kasir Orpheus.',
-    rows: [
-      { col1: '#4894 — Apex Fabrication', col2: 'Kasir 1 • QRIS • 18 unit', col3: 'Rp32.100.000', badge: 'Lunas' },
-      { col1: '#4893 — Harbor Millwork', col2: 'Kasir 2 • Kartu Debit • 6 unit', col3: 'Rp10.200.000', badge: 'Lunas' },
-      { col1: '#4892 — Northline Builders', col2: 'Kasir 1 • QRIS • 24 unit', col3: 'Rp51.300.000', badge: 'Lunas' },
-      { col1: '#4891 — Studio Kestrel', col2: 'Kasir 3 • Tunai • 4 unit', col3: 'Rp6.150.000', badge: 'Selesai' },
-    ],
-  },
   Analisis: {
     subtitle: 'Rincian lengkap alur transaksi kasir dan performa metode pembayaran November 2026.',
     rows: [

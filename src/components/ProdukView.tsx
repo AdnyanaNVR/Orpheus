@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Search,
   ArrowUpDown,
@@ -75,10 +75,17 @@ export const ProdukView: React.FC = () => {
   const [editStock, setEditStock] = useState('');
   const [restockAmount, setRestockAmount] = useState('');
   const [actionError, setActionError] = useState('');
+  const tableScrollRef = useRef<HTMLDivElement | null>(null);
+
+  const syncScrollState = () => {
+    const tableScrolled = (tableScrollRef.current?.scrollTop ?? 0) > 40;
+    const windowScrolled = window.scrollY > 40;
+    setIsScrolled(tableScrolled || windowScrolled);
+  };
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 60);
+    const handleWindowScroll = () => {
+      syncScrollState();
       setContextMenu(null);
     };
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -86,16 +93,17 @@ export const ProdukView: React.FC = () => {
         setContextMenu(null);
       }
     };
-    handleScroll();
-    window.addEventListener('scroll', handleScroll, { passive: true });
+    syncScrollState();
+    window.addEventListener('scroll', handleWindowScroll, { passive: true });
     window.addEventListener('keydown', handleKeyDown);
     return () => {
-      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('scroll', handleWindowScroll);
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, []);
 
   const scrollToTop = () => {
+    tableScrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -323,15 +331,15 @@ export const ProdukView: React.FC = () => {
   };
 
   return (
-    <main>
-      <div className="flex items-center justify-between">
+    <main className="lg:h-[calc(100vh-122px)] flex flex-col">
+      <div className="flex items-center justify-between shrink-0">
         <h1 className="text-[40px] font-semibold text-[#f3f3f1] tracking-[-0.03em] leading-[1.05]">
           Produk
         </h1>
       </div>
 
       {/* 3-Card Inventory Summary Strip */}
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-[14px] mt-[16px]">
+      <section className="grid grid-cols-1 md:grid-cols-3 gap-[14px] mt-[16px] shrink-0">
         {/* Card 1: Stock Value (Bright Monochrome Surface) */}
         <div className="bg-[#f0f0ee] rounded-[22px] px-[22px] py-[18px] flex flex-col justify-between min-h-[132px] overflow-hidden">
           <div className="text-[12px] font-medium text-[#2c2c2a] whitespace-nowrap">
@@ -372,10 +380,10 @@ export const ProdukView: React.FC = () => {
         </div>
       </section>
 
-      {/* Search Bar & Sortable Product Table */}
-      <section className="mt-[16px] bg-[#171716] border border-white/[0.08] rounded-[22px] p-[20px]">
+      {/* Search Bar & Sortable Product Table (Only Table Scrolls on Desktop) */}
+      <section className="mt-[16px] bg-[#171716] border border-white/[0.08] rounded-[22px] p-[20px] flex-1 min-h-0 flex flex-col overflow-hidden">
         {/* Toolbar: White-before-focus Search Input + Tambah produk Button */}
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-[16px]">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-[16px] shrink-0">
           <div className="group relative w-full sm:w-[340px]">
             <Search
               className="w-[15px] h-[15px] text-[#141414] group-focus-within:text-[#848480] absolute left-[14px] top-1/2 -translate-y-1/2 pointer-events-none transition-colors"
@@ -411,9 +419,16 @@ export const ProdukView: React.FC = () => {
         </div>
 
         {/* Product Table */}
-        <div className="overflow-x-auto rounded-[14px] border border-white/[0.06] bg-[#141413]">
+        <div
+          ref={tableScrollRef}
+          onScroll={() => {
+            syncScrollState();
+            setContextMenu(null);
+          }}
+          className="flex-1 min-h-0 overflow-auto rounded-[14px] border border-white/[0.06] bg-[#141413] [scrollbar-width:thin] [scrollbar-color:#333330_transparent]"
+        >
           <table className="w-full border-collapse text-left">
-            <thead>
+            <thead className="sticky top-0 z-10">
               <tr className="bg-[#1b1b19] border-b border-white/[0.07]">
                 <th className="py-[12px] px-[16px] w-[96px]">
                   <button
