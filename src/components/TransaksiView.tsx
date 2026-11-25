@@ -213,6 +213,7 @@ export const TransaksiView: React.FC<TransaksiViewProps> = ({ storeName }) => {
   const [methodFilter, setMethodFilter] = useState<MethodFilter>('Semua');
   const [sortKey, setSortKey] = useState<SortKey>('id');
   const [sortDir, setSortDir] = useState<SortDirection>('asc');
+  const [isInitialEntry, setIsInitialEntry] = useState(true);
   const [isScrolled, setIsScrolled] = useState(false);
 
   const [detailTrxId, setDetailTrxId] = useState<string | null>(null);
@@ -282,6 +283,7 @@ export const TransaksiView: React.FC<TransaksiViewProps> = ({ storeName }) => {
   }, [transactions]);
 
   const handleSort = (key: SortKey) => {
+    setIsInitialEntry(false);
     if (sortKey === key) {
       setSortDir((prev) => (prev === 'asc' ? 'desc' : 'asc'));
     } else {
@@ -354,7 +356,10 @@ export const TransaksiView: React.FC<TransaksiViewProps> = ({ storeName }) => {
 
   return (
     <main className="lg:h-[calc(100vh-122px)] flex flex-col">
-      <div className="flex items-center justify-between shrink-0">
+      <div
+        className="flex items-center justify-between shrink-0 animate-tab-up"
+        style={{ animationDelay: '0ms' }}
+      >
         <h1 className="text-[40px] font-semibold text-[#f3f3f1] tracking-[-0.03em] leading-[1.05]">
           Transaksi
         </h1>
@@ -363,7 +368,10 @@ export const TransaksiView: React.FC<TransaksiViewProps> = ({ storeName }) => {
       {/* 3-Card Transaction Summary Strip (Matches ProdukView Layout) */}
       <section className="grid grid-cols-1 md:grid-cols-3 gap-[14px] mt-[16px] shrink-0">
         {/* Card 1: Total Revenue (Bright Monochrome Surface) */}
-        <div className="bg-[#f0f0ee] rounded-[22px] px-[22px] py-[18px] flex flex-col justify-between min-h-[132px] overflow-hidden">
+        <div
+          className="bg-[#f0f0ee] rounded-[22px] px-[22px] py-[18px] flex flex-col justify-between min-h-[132px] overflow-hidden animate-tab-up"
+          style={{ animationDelay: '100ms' }}
+        >
           <div className="text-[12px] font-medium text-[#2c2c2a] whitespace-nowrap">
             Total pendapatan
           </div>
@@ -376,7 +384,10 @@ export const TransaksiView: React.FC<TransaksiViewProps> = ({ storeName }) => {
         </div>
 
         {/* Card 2: Average Transaction Value */}
-        <div className="bg-[#171716] border border-white/[0.08] rounded-[22px] px-[22px] py-[18px] flex flex-col justify-between min-h-[132px] overflow-hidden">
+        <div
+          className="bg-[#171716] border border-white/[0.08] rounded-[22px] px-[22px] py-[18px] flex flex-col justify-between min-h-[132px] overflow-hidden animate-tab-up"
+          style={{ animationDelay: '170ms' }}
+        >
           <div className="text-[12px] font-medium text-[#9e9e9a] whitespace-nowrap">
             Rata-rata transaksi
           </div>
@@ -389,7 +400,10 @@ export const TransaksiView: React.FC<TransaksiViewProps> = ({ storeName }) => {
         </div>
 
         {/* Card 3: Returned Transactions */}
-        <div className="bg-[#171716] border border-white/[0.08] rounded-[22px] px-[22px] py-[18px] flex flex-col justify-between min-h-[132px] overflow-hidden">
+        <div
+          className="bg-[#171716] border border-white/[0.08] rounded-[22px] px-[22px] py-[18px] flex flex-col justify-between min-h-[132px] overflow-hidden animate-tab-up"
+          style={{ animationDelay: '240ms' }}
+        >
           <div className="text-[12px] font-medium text-[#9e9e9a] whitespace-nowrap">
             Transaksi dikembalikan
           </div>
@@ -407,10 +421,14 @@ export const TransaksiView: React.FC<TransaksiViewProps> = ({ storeName }) => {
         <section
           className={`${
             detailTrx ? 'col-span-12 lg:col-span-8' : 'col-span-12'
-          } bg-[#171716] border border-white/[0.08] rounded-[22px] p-[20px] min-w-0 min-h-0 flex flex-col overflow-hidden`}
+          } bg-[#171716] border border-white/[0.08] rounded-[22px] p-[20px] min-w-0 min-h-0 flex flex-col overflow-hidden animate-tab-up`}
+          style={{ animationDelay: '320ms' }}
         >
           {/* Toolbar: White-before-focus Search Input + Method Segmented Filter */}
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-[16px] shrink-0">
+        <div
+          className="flex flex-wrap items-center justify-between gap-3 mb-[16px] shrink-0 animate-tab-up"
+          style={{ animationDelay: '380ms' }}
+        >
           <div className="group relative w-full sm:w-[340px]">
             <Search
               className="w-[15px] h-[15px] text-[#141414] group-focus-within:text-[#848480] absolute left-[14px] top-1/2 -translate-y-1/2 pointer-events-none transition-colors"
@@ -419,14 +437,20 @@ export const TransaksiView: React.FC<TransaksiViewProps> = ({ storeName }) => {
             <input
               type="text"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setIsInitialEntry(false);
+                setSearchQuery(e.target.value);
+              }}
               placeholder="Cari transaksi..."
               className="w-full h-[40px] rounded-[12px] bg-[#ededeb] hover:bg-white focus:bg-[#1c1c1a] border border-[#2a2a28] focus:border-white/[0.22] pl-[40px] pr-[36px] text-[12.5px] font-medium text-[#141414] focus:text-[#f2f2f0] placeholder-[#646460] focus:placeholder-[#787874] focus:outline-none transition-colors"
             />
             {searchQuery && (
               <button
                 type="button"
-                onClick={() => setSearchQuery('')}
+                onClick={() => {
+                  setIsInitialEntry(false);
+                  setSearchQuery('');
+                }}
                 aria-label="Hapus pencarian"
                 className="absolute right-[10px] top-1/2 -translate-y-1/2 text-[#5c5c58] group-focus-within:text-[#848480] hover:text-[#141414] group-focus-within:hover:text-white transition-colors cursor-pointer"
               >
@@ -442,7 +466,10 @@ export const TransaksiView: React.FC<TransaksiViewProps> = ({ storeName }) => {
                 <button
                   key={method}
                   type="button"
-                  onClick={() => setMethodFilter(method)}
+                  onClick={() => {
+                    setIsInitialEntry(false);
+                    setMethodFilter(method);
+                  }}
                   className={`h-[32px] px-[14px] rounded-full text-[12px] transition-colors cursor-pointer whitespace-nowrap ${
                     isActive
                       ? 'bg-[#ededeb] text-[#141414] font-semibold'
@@ -460,7 +487,8 @@ export const TransaksiView: React.FC<TransaksiViewProps> = ({ storeName }) => {
         <div
           ref={tableScrollRef}
           onScroll={syncScrollState}
-          className="flex-1 min-h-0 overflow-auto rounded-[14px] border border-white/[0.06] bg-[#141413] [scrollbar-width:thin] [scrollbar-color:#333330_transparent]"
+          className="flex-1 min-h-0 overflow-auto rounded-[14px] border border-white/[0.06] bg-[#141413] animate-tab-up"
+          style={{ animationDelay: '380ms' }}
         >
           <table className="w-full border-collapse text-left">
             <thead className="sticky top-0 z-10">
@@ -553,7 +581,7 @@ export const TransaksiView: React.FC<TransaksiViewProps> = ({ storeName }) => {
             </thead>
             <tbody
               key={`${methodFilter}-${searchQuery}-${sortKey}-${sortDir}`}
-              className="animate-filter-fade"
+              className={isInitialEntry ? '' : 'animate-filter-fade'}
             >
               {filteredAndSorted.length === 0 ? (
                 <tr>
@@ -567,7 +595,7 @@ export const TransaksiView: React.FC<TransaksiViewProps> = ({ storeName }) => {
                   </td>
                 </tr>
               ) : (
-                filteredAndSorted.map((trx) => {
+                filteredAndSorted.map((trx, idx) => {
                   const calc = computeTotals(trx);
                   const isReturned = trx.status === 'Dikembalikan';
                   const isSelected = detailTrx?.id === trx.id;
@@ -575,7 +603,14 @@ export const TransaksiView: React.FC<TransaksiViewProps> = ({ storeName }) => {
                     <tr
                       key={trx.id}
                       onClick={() => setDetailTrxId(trx.id)}
+                      style={
+                        isInitialEntry
+                          ? { animationDelay: `${430 + Math.min(idx, 15) * 48}ms` }
+                          : undefined
+                      }
                       className={`border-t border-white/[0.05] transition-colors cursor-pointer ${
+                        isInitialEntry ? 'animate-tab-up' : ''
+                      } ${
                         isSelected ? 'bg-white/[0.07]' : 'hover:bg-white/[0.04]'
                       }`}
                     >
@@ -625,7 +660,7 @@ export const TransaksiView: React.FC<TransaksiViewProps> = ({ storeName }) => {
         {detailTrx && (
           <aside
             key={detailTrx.id}
-            className="col-span-12 lg:col-span-4 bg-[#171716] border border-white/[0.08] rounded-[22px] p-[22px] min-w-0 min-h-0 overflow-y-auto [scrollbar-width:thin] [scrollbar-color:#333330_transparent] animate-slide-right"
+            className="col-span-12 lg:col-span-4 bg-[#171716] border border-white/[0.08] rounded-[22px] p-[22px] min-w-0 min-h-0 overflow-y-auto animate-slide-right"
           >
             {(() => {
               const calc = computeTotals(detailTrx);
@@ -776,17 +811,22 @@ export const TransaksiView: React.FC<TransaksiViewProps> = ({ storeName }) => {
         )}
       </div>
 
-      <button
-        type="button"
-        onClick={scrollToTop}
-        aria-label="Kembali ke atas"
-        title="Kembali ke atas"
-        className={`fixed bottom-6 right-6 z-40 w-[42px] h-[42px] rounded-full bg-[#ededeb] text-[#141414] hover:bg-white border border-white/15 shadow-[0_10px_28px_rgba(0,0,0,0.45)] flex items-center justify-center transition-all duration-200 cursor-pointer ${
-          isScrolled ? 'opacity-100 scale-100' : 'opacity-70 hover:opacity-100 scale-95 hover:scale-100'
-        }`}
+      <div
+        className="fixed bottom-6 right-6 z-40 animate-tab-up"
+        style={{ animationDelay: '530ms' }}
       >
-        <ArrowUp className="w-[18px] h-[18px]" strokeWidth={2.1} />
-      </button>
+        <button
+          type="button"
+          onClick={scrollToTop}
+          aria-label="Kembali ke atas"
+          title="Kembali ke atas"
+          className={`w-[42px] h-[42px] rounded-full bg-[#ededeb] text-[#141414] hover:bg-white border border-white/15 shadow-[0_10px_28px_rgba(0,0,0,0.45)] flex items-center justify-center transition-all duration-200 cursor-pointer ${
+            isScrolled ? 'opacity-100 scale-100' : 'opacity-70 hover:opacity-100 scale-95 hover:scale-100'
+          }`}
+        >
+          <ArrowUp className="w-[18px] h-[18px]" strokeWidth={2.1} />
+        </button>
+      </div>
 
       {returnTarget && (
         <div

@@ -45,7 +45,10 @@ export const KpiCards: React.FC<KpiCardsProps> = ({ data, onNavigate }) => {
   return (
     <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-[14px]">
       {/* Card 1: Penjualan Aktif */}
-      <div className="bg-[#f0f0ee] rounded-[22px] px-[20px] py-[17px] flex flex-col justify-between min-h-[148px] relative overflow-hidden">
+      <div
+        className="bg-[#f0f0ee] rounded-[22px] px-[20px] py-[17px] flex flex-col justify-between min-h-[148px] relative overflow-hidden animate-tab-up"
+        style={{ animationDelay: '150ms' }}
+      >
         <div className="flex items-center text-[12px] font-medium text-[#2c2c2a] whitespace-nowrap">
           <span>Penjualan aktif</span>
         </div>
@@ -98,7 +101,10 @@ export const KpiCards: React.FC<KpiCardsProps> = ({ data, onNavigate }) => {
       </div>
 
       {/* Card 2: Pendapatan */}
-      <div className="bg-[#d6d6d2] rounded-[22px] px-[20px] py-[17px] flex flex-col justify-between min-h-[148px] overflow-hidden">
+      <div
+        className="bg-[#d6d6d2] rounded-[22px] px-[20px] py-[17px] flex flex-col justify-between min-h-[148px] overflow-hidden animate-tab-up"
+        style={{ animationDelay: '210ms' }}
+      >
         <div className="flex items-center text-[12px] font-medium text-[#2c2c2a] whitespace-nowrap">
           <span>Pendapatan</span>
         </div>
@@ -160,7 +166,10 @@ export const KpiCards: React.FC<KpiCardsProps> = ({ data, onNavigate }) => {
       </div>
 
       {/* Card 3: Unit Terjual */}
-      <div className="bg-[#c2c2bd] rounded-[22px] px-[20px] py-[17px] flex flex-col justify-between min-h-[148px] overflow-hidden">
+      <div
+        className="bg-[#c2c2bd] rounded-[22px] px-[20px] py-[17px] flex flex-col justify-between min-h-[148px] overflow-hidden animate-tab-up"
+        style={{ animationDelay: '270ms' }}
+      >
         <div className="flex items-center text-[12px] font-medium text-[#2c2c2a] whitespace-nowrap">
           <span>Unit terjual</span>
         </div>
@@ -203,7 +212,10 @@ export const KpiCards: React.FC<KpiCardsProps> = ({ data, onNavigate }) => {
       </div>
 
       {/* Card 4: Transaksi Selesai */}
-      <div className="bg-[#ababa6] rounded-[22px] px-[20px] py-[17px] flex flex-col justify-between min-h-[148px] overflow-hidden">
+      <div
+        className="bg-[#ababa6] rounded-[22px] px-[20px] py-[17px] flex flex-col justify-between min-h-[148px] overflow-hidden animate-tab-up"
+        style={{ animationDelay: '330ms' }}
+      >
         <div className="flex items-center text-[12px] font-medium text-[#2c2c2a] whitespace-nowrap">
           <span>Transaksi selesai</span>
         </div>

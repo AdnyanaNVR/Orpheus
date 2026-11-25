@@ -47,18 +47,24 @@ export const PengaturanView: React.FC<PengaturanViewProps> = ({
 
   return (
     <main>
-      <div className="flex items-center justify-between">
+      <div
+        className="flex items-center justify-between animate-tab-up"
+        style={{ animationDelay: '0ms' }}
+      >
         <h1 className="text-[40px] font-semibold text-[#f3f3f1] tracking-[-0.03em] leading-[1.05]">
           Pengaturan
         </h1>
       </div>
 
-      <section className="mt-[22px] max-w-[560px]">
+      <section
+        className="mt-[22px] max-w-[560px] animate-tab-up"
+        style={{ animationDelay: '120ms' }}
+      >
         <form
           onSubmit={handleSubmit}
           className="bg-[#171716] border border-white/[0.08] rounded-[22px] p-[24px]"
         >
-          <div>
+          <div className="animate-tab-up" style={{ animationDelay: '210ms' }}>
             <label
               htmlFor="store-name-input"
               className="block text-[13px] font-semibold text-[#f3f3f1]"
@@ -83,7 +89,10 @@ export const PengaturanView: React.FC<PengaturanViewProps> = ({
             )}
           </div>
 
-          <div className="mt-[20px] pt-[18px] border-t border-dashed border-white/[0.12] flex items-center justify-between gap-3">
+          <div
+            className="mt-[20px] pt-[18px] border-t border-dashed border-white/[0.12] flex items-center justify-between gap-3 animate-tab-up"
+            style={{ animationDelay: '300ms' }}
+          >
             <span className="text-[12px] text-[#9a9a96]">
               {savedNotice && (
                 <span className="animate-filter-fade inline-block">

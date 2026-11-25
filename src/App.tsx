@@ -55,7 +55,7 @@ export default function App() {
   const dataset = PERIOD_DATA[period];
 
   return (
-    <div className="min-h-screen w-full bg-[#111110] text-[#f2f2f0] overflow-x-hidden">
+    <div className="min-h-screen w-full bg-[#111110] text-[#f2f2f0] overflow-x-clip">
       <SidebarNav activeTab={activeTab} onSelectTab={setActiveTab} />
 
       {/* Monochrome Floating Top Pill matching center container width */}
@@ -63,18 +63,24 @@ export default function App() {
 
       {/* Main Content Shell with equal 28px clearance from left navbar (88px) and right edge */}
       <div className="relative w-full pl-[88px] sm:pl-[116px] pr-[16px] sm:pr-[28px] pt-[102px] pb-[20px]">
-        <div key={activeTab} className="animate-view-up">
+        <div key={activeTab}>
           {activeTab === 'Dasbor' ? (
             <main>
               {/* Title Row */}
-              <div className="flex items-center justify-between">
+              <div
+                className="flex items-center justify-between animate-tab-up"
+                style={{ animationDelay: '0ms' }}
+              >
                 <h1 className="text-[40px] font-semibold text-[#f3f3f1] tracking-[-0.03em] leading-[1.05]">
                   Dasbor
                 </h1>
               </div>
 
               {/* Sub-navigation & Action Toolbar */}
-              <div className="flex items-center justify-between gap-3 mt-[14px]">
+              <div
+                className="flex items-center justify-between gap-3 mt-[14px] animate-tab-up"
+                style={{ animationDelay: '80ms' }}
+              >
                 {/* Period Filter Segmented Pill: Hari Ini | 7 Hari | 30 Hari */}
                 <div className="inline-flex items-center bg-[#21211f] border border-white/[0.05] rounded-full p-[3px] gap-[2px] shrink-0">
                   {PERIOD_FILTERS.map((item) => {
@@ -98,12 +104,16 @@ export default function App() {
               </div>
 
               {/* Row 1: 4 Stepped-Tone KPI Cards */}
-              <div key={`kpi-${period}`} className="mt-[14px] animate-view-up">
+              <div key={`kpi-${period}`} className="mt-[14px]">
                 <KpiCards data={dataset.kpis} onNavigate={setActiveTab} />
               </div>
 
               {/* Row 2: Full-width Revenue Bar Chart (7 Hari / 30 Hari) */}
-              <div className="mt-[14px] h-[288px]">
+              <div
+                key={`revenue-${period}`}
+                className="mt-[14px] h-[288px] animate-tab-up"
+                style={{ animationDelay: '400ms' }}
+              >
                 <RevenueChartCard
                   range={revenueRange}
                   onRangeChange={setRevenueRange}
@@ -113,13 +123,18 @@ export default function App() {
               {/* Row 3: Transactions by Time Heatmap & Total Transactions Donut */}
               <div
                 key={`charts-${period}`}
-                className="grid grid-cols-12 gap-[14px] mt-[14px] animate-view-up"
-                style={{ animationDelay: '70ms' }}
+                className="grid grid-cols-12 gap-[14px] mt-[14px]"
               >
-                <div className="col-span-12 lg:col-span-7 h-[228px]">
+                <div
+                  className="col-span-12 lg:col-span-7 h-[228px] animate-tab-up"
+                  style={{ animationDelay: '490ms' }}
+                >
                   <VisitsByTimeCard data={dataset.heatmap} />
                 </div>
-                <div className="col-span-12 lg:col-span-5 h-[228px]">
+                <div
+                  className="col-span-12 lg:col-span-5 h-[228px] animate-tab-up"
+                  style={{ animationDelay: '580ms' }}
+                >
                   <TotalVisitsCard data={dataset.totalTransactions} />
                 </div>
               </div>

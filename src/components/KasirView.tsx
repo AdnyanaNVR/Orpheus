@@ -42,6 +42,7 @@ export const KasirView: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortDir, setSortDir] = useState<SortDirection>('asc');
+  const [isInitialEntry, setIsInitialEntry] = useState(true);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [discountInput, setDiscountInput] = useState('');
   const [appliedDiscountPercent, setAppliedDiscountPercent] = useState(0);
@@ -73,6 +74,7 @@ export const KasirView: React.FC = () => {
   }, []);
 
   const handleSortClick = (field: 'name' | 'price') => {
+    setIsInitialEntry(false);
     if (sortField === field) {
       setSortDir((prev) => (prev === 'asc' ? 'desc' : 'asc'));
     } else {
@@ -238,7 +240,10 @@ export const KasirView: React.FC = () => {
   return (
     <main className="lg:h-[calc(100vh-122px)] flex flex-col">
       {/* Clean Kasir Header */}
-      <div className="flex items-center justify-between shrink-0">
+      <div
+        className="flex items-center justify-between shrink-0 animate-tab-up"
+        style={{ animationDelay: '0ms' }}
+      >
         <h1 className="text-[40px] font-semibold text-[#f3f3f1] tracking-[-0.03em] leading-[1.05]">
           Kasir
         </h1>
@@ -247,9 +252,15 @@ export const KasirView: React.FC = () => {
       {/* Two-Column Monochrome POS Workspace: Only Product Grid Scrolls on Desktop */}
       <div className="grid grid-cols-12 gap-[16px] mt-[16px] flex-1 min-h-0 items-stretch">
         {/* Left: Fixed Search/Sort Header + Independently Scrollable Product Grid */}
-        <section className="col-span-12 lg:col-span-8 bg-[#171716] border border-white/[0.06] rounded-[20px] p-[18px] flex flex-col min-w-0 min-h-0 overflow-hidden">
+        <section
+          className="col-span-12 lg:col-span-8 bg-[#171716] border border-white/[0.06] rounded-[20px] p-[18px] flex flex-col min-w-0 min-h-0 overflow-hidden animate-tab-up"
+          style={{ animationDelay: '100ms' }}
+        >
           {/* Search (Left, Compact) & Sort (Right End) */}
-          <div className="flex flex-wrap items-center justify-between gap-[10px] shrink-0">
+          <div
+            className="flex flex-wrap items-center justify-between gap-[10px] shrink-0 animate-tab-up"
+            style={{ animationDelay: '170ms' }}
+          >
             <div className="group relative w-full sm:w-[235px]">
               <Search
                 className="w-[14px] h-[14px] text-[#141414] group-focus-within:text-[#848480] absolute left-[13px] top-1/2 -translate-y-1/2 pointer-events-none transition-colors"
@@ -258,7 +269,10 @@ export const KasirView: React.FC = () => {
               <input
                 type="text"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => {
+                  setIsInitialEntry(false);
+                  setSearchQuery(e.target.value);
+                }}
                 placeholder="Cari produk..."
                 className="w-full h-[40px] rounded-[12px] bg-[#ededeb] hover:bg-white focus:bg-[#1c1c1a] border border-[#2a2a28] focus:border-white/[0.22] pl-[36px] pr-[12px] text-[12px] font-medium text-[#141414] focus:text-[#f2f2f0] placeholder-[#646460] focus:placeholder-[#787874] focus:outline-none transition-colors"
               />
@@ -305,7 +319,7 @@ export const KasirView: React.FC = () => {
           </div>
 
           {/* Independently Scrollable Product Grid Area */}
-          <div className="flex-1 min-h-0 overflow-y-auto mt-[14px] pr-[4px] [scrollbar-width:thin] [scrollbar-color:#333330_transparent]">
+          <div className="flex-1 min-h-0 overflow-y-auto mt-[14px] pr-[4px]">
             {filteredProducts.length === 0 ? (
               <div className="h-full min-h-[260px] flex flex-col items-center justify-center text-center py-12">
                 <div className="w-[46px] h-[46px] rounded-[13px] bg-[#222220] border border-white/[0.07] flex items-center justify-center text-[#848480] mb-3">
@@ -319,9 +333,11 @@ export const KasirView: React.FC = () => {
             ) : (
               <div
                 key={`${searchQuery}-${sortField}-${sortDir}`}
-                className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-[12px] pb-1 animate-filter-fade"
+                className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-[12px] pb-1 ${
+                  isInitialEntry ? '' : 'animate-filter-fade'
+                }`}
               >
-                {filteredProducts.map((product) => {
+                {filteredProducts.map((product, idx) => {
                   const inCart = getCartQuantity(product.id);
                   const remaining = Math.max(0, product.stock - inCart);
                   const outOfStock = remaining <= 0;
@@ -332,7 +348,14 @@ export const KasirView: React.FC = () => {
                       type="button"
                       disabled={outOfStock}
                       onClick={() => addProductToCart(product)}
+                      style={
+                        isInitialEntry
+                          ? { animationDelay: `${210 + Math.min(idx, 15) * 45}ms` }
+                          : undefined
+                      }
                       className={`group rounded-[16px] border p-[15px] text-left flex flex-col justify-between transition-all min-h-[116px] ${
+                        isInitialEntry ? 'animate-tab-up' : ''
+                      } ${
                         outOfStock
                           ? 'bg-[#181817] border-white/[0.04] opacity-50 cursor-not-allowed'
                           : inCart > 0
@@ -377,9 +400,15 @@ export const KasirView: React.FC = () => {
         </section>
 
         {/* Right: Current Sale Cart & Payment Panel (Fixed within viewport) */}
-        <aside className="col-span-12 lg:col-span-4 bg-[#171716] border border-white/[0.06] rounded-[20px] flex flex-col justify-between overflow-hidden min-h-0 animate-slide-right">
+        <aside
+          className="col-span-12 lg:col-span-4 bg-[#171716] border border-white/[0.06] rounded-[20px] flex flex-col justify-between overflow-hidden min-h-0 animate-tab-up"
+          style={{ animationDelay: '210ms' }}
+        >
           {/* Top Sale Header */}
-          <div className="p-[18px] pb-0 flex-1 flex flex-col min-h-0">
+          <div
+            className="p-[18px] pb-0 flex-1 flex flex-col min-h-0 animate-tab-up"
+            style={{ animationDelay: '280ms' }}
+          >
             <div className="flex items-center justify-between gap-2 shrink-0">
               <div className="flex items-center gap-[9px]">
                 <h2 className="text-[15.5px] font-semibold text-[#f3f3f1] tracking-[-0.01em] whitespace-nowrap">
@@ -416,7 +445,7 @@ export const KasirView: React.FC = () => {
                 </div>
               </div>
             ) : (
-              <div className="flex-1 min-h-0 overflow-y-auto py-[12px] space-y-[8px] pr-[2px] [scrollbar-width:thin] [scrollbar-color:#333330_transparent]">
+              <div className="flex-1 min-h-0 overflow-y-auto py-[12px] space-y-[8px] pr-[2px]">
                 {cart.map((item) => (
                   <div
                     key={item.id}
@@ -465,7 +494,10 @@ export const KasirView: React.FC = () => {
           </div>
 
           {/* Bottom Summary, Payment Method Pills & Charge CTA */}
-          <div className="px-[18px] pb-[18px] shrink-0">
+          <div
+            className="px-[18px] pb-[18px] shrink-0 animate-tab-up"
+            style={{ animationDelay: '370ms' }}
+          >
             <div className="border-t border-dashed border-white/[0.14] pt-[15px]">
               {/* Subtotal, Discount Pill, Tax */}
               <div className="space-y-[10px] text-[12.5px]">
