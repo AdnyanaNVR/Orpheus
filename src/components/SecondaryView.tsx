@@ -2,23 +2,14 @@ import React from 'react';
 import { NavTab } from '../data/dashboardData';
 
 interface SecondaryViewProps {
-  tab: Exclude<NavTab, 'Dasbor' | 'Kasir'>;
+  tab: Exclude<NavTab, 'Dasbor' | 'Kasir' | 'Produk'>;
   onBackToDashboard: () => void;
 }
 
 const VIEW_CONTENT: Record<
-  Exclude<NavTab, 'Dasbor' | 'Kasir'>,
+  Exclude<NavTab, 'Dasbor' | 'Kasir' | 'Produk'>,
   { subtitle: string; rows: { col1: string; col2: string; col3: string; badge: string }[] }
 > = {
-  Produk: {
-    subtitle: '3.842 unit terjual sepanjang bulan ini pada katalog perangkat keras Orpheus.',
-    rows: [
-      { col1: 'Braket Orpheus Kokoh — Hitam Doff', col2: 'SKU-1042 • 842 terjual', col3: 'Rp214.710.000', badge: 'Stok tersedia' },
-      { col1: 'Pin Rak Kuningan Giling (Isi 20)', col2: 'SKU-2088 • 1.120 terjual', col3: 'Rp142.800.000', badge: 'Stok menipis' },
-      { col1: 'Gusset Baja Tersembunyi 8"', col2: 'SKU-3115 • 618 terjual', col3: 'Rp166.860.000', badge: 'Stok tersedia' },
-      { col1: 'Kit Rel Aluminium Anodized', col2: 'SKU-4010 • 410 terjual', col3: 'Rp110.130.000', badge: 'Stok tersedia' },
-    ],
-  },
   Transaksi: {
     subtitle: 'Riwayat transaksi terbaru di seluruh terminal kasir Orpheus.',
     rows: [
