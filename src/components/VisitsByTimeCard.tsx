@@ -73,20 +73,25 @@ export const VisitsByTimeCard: React.FC<VisitsByTimeCardProps> = ({ data }) => {
               return (
                 <div
                   key={day}
-                  onMouseEnter={() => setHoveredCell({ r: rIdx, c: cIdx })}
-                  onMouseLeave={() => setHoveredCell(null)}
-                  className="relative h-[26px] rounded-[7px] transition-transform duration-150 cursor-pointer"
-                  style={{
-                    backgroundColor: bg,
-                    transform: isHovered ? 'scale(1.03)' : 'scale(1)',
-                  }}
+                  className="animate-cell-pop"
+                  style={{ animationDelay: `${(rIdx + cIdx) * 32}ms` }}
                 >
-                  {isHovered && (
-                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 z-40 whitespace-nowrap rounded-lg bg-[#252523] border border-white/10 px-2.5 py-1 text-[10.5px] text-[#f2f2f0] shadow-xl pointer-events-none tabular-nums">
-                      <span className="font-semibold">{day}</span> • {slot}:{' '}
-                      <span className="font-semibold">{count.toLocaleString('id-ID')}</span> transaksi
-                    </div>
-                  )}
+                  <div
+                    onMouseEnter={() => setHoveredCell({ r: rIdx, c: cIdx })}
+                    onMouseLeave={() => setHoveredCell(null)}
+                    className="relative h-[26px] rounded-[7px] transition-transform duration-150 cursor-pointer"
+                    style={{
+                      backgroundColor: bg,
+                      transform: isHovered ? 'scale(1.04)' : 'scale(1)',
+                    }}
+                  >
+                    {isHovered && (
+                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 z-40 whitespace-nowrap rounded-lg bg-[#252523] border border-white/10 px-2.5 py-1 text-[10.5px] text-[#f2f2f0] shadow-xl pointer-events-none tabular-nums">
+                        <span className="font-semibold">{day}</span> • {slot}:{' '}
+                        <span className="font-semibold">{count.toLocaleString('id-ID')}</span> transaksi
+                      </div>
+                    )}
+                  </div>
                 </div>
               );
             })}

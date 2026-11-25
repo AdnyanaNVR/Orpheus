@@ -1,12 +1,29 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { PeriodDataset, NavTab } from '../data/dashboardData';
+import { AnimatedNumber } from './AnimatedNumber';
 
 interface KpiCardsProps {
   data: PeriodDataset['kpis'];
   onNavigate: (tab: NavTab) => void;
 }
 
+function parseNumericMetric(formatted: string): number {
+  return Number(formatted.replace(/[^\d]/g, '')) || 0;
+}
+
+function formatRupiahMetric(val: number): string {
+  return `Rp${Math.round(val).toLocaleString('id-ID')}`;
+}
+
 export const KpiCards: React.FC<KpiCardsProps> = ({ data, onNavigate }) => {
+  const [ringReady, setRingReady] = useState(false);
+
+  useEffect(() => {
+    setRingReady(false);
+    const raf = window.requestAnimationFrame(() => setRingReady(true));
+    return () => window.cancelAnimationFrame(raf);
+  }, [data.unitsSold.percent]);
+
   const sparkPoints = data.revenue.spark;
   const sparkMin = Math.min(...sparkPoints) - 4;
   const sparkMax = Math.max(...sparkPoints) + 4;
@@ -23,7 +40,7 @@ export const KpiCards: React.FC<KpiCardsProps> = ({ data, onNavigate }) => {
 
   const r = 15;
   const circ = 2 * Math.PI * r;
-  const dashOffset = circ * (1 - data.unitsSold.percent / 100);
+  const targetDashOffset = circ * (1 - data.unitsSold.percent / 100);
 
   return (
     <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-[14px]">
@@ -35,7 +52,10 @@ export const KpiCards: React.FC<KpiCardsProps> = ({ data, onNavigate }) => {
 
         <div className="flex items-center justify-between my-[10px] gap-2 min-w-0">
           <div className="text-[21px] xl:text-[22px] 2xl:text-[24px] font-semibold text-[#141414] tracking-[-0.03em] leading-none tabular-nums whitespace-nowrap">
-            {data.activeSales.value}
+            <AnimatedNumber
+              value={parseNumericMetric(data.activeSales.value)}
+              formatter={formatRupiahMetric}
+            />
           </div>
 
           <svg width="42" height="38" viewBox="0 0 46 40" className="shrink-0">
@@ -48,10 +68,18 @@ export const KpiCards: React.FC<KpiCardsProps> = ({ data, onNavigate }) => {
               return (
                 <g key={idx}>
                   <rect x={x} y={2} width="10" height={maxH} rx="3.5" fill="rgba(0,0,0,0.06)" />
-                  <rect x={x} y={y} width="10" height={barH} rx="3.5" fill={fills[idx]} />
-                  {idx === 2 && (
-                    <circle cx={x + 5} cy={y + 6} r="1.4" fill="#f0f0ee" />
-                  )}
+                  <g
+                    className="animate-bar-grow"
+                    style={{
+                      transformOrigin: `${x + 5}px 38px`,
+                      animationDelay: `${idx * 85}ms`,
+                    }}
+                  >
+                    <rect x={x} y={y} width="10" height={barH} rx="3.5" fill={fills[idx]} />
+                    {idx === 2 && (
+                      <circle cx={x + 5} cy={y + 6} r="1.4" fill="#f0f0ee" />
+                    )}
+                  </g>
                 </g>
               );
             })}
@@ -77,7 +105,10 @@ export const KpiCards: React.FC<KpiCardsProps> = ({ data, onNavigate }) => {
 
         <div className="flex items-center justify-between my-[10px] gap-2 min-w-0">
           <div className="text-[21px] xl:text-[22px] 2xl:text-[24px] font-semibold text-[#141414] tracking-[-0.03em] leading-none tabular-nums whitespace-nowrap">
-            {data.revenue.value}
+            <AnimatedNumber
+              value={parseNumericMetric(data.revenue.value)}
+              formatter={formatRupiahMetric}
+            />
           </div>
 
           <svg width="62" height="32" viewBox="0 0 74 34" className="shrink-0 overflow-visible">
@@ -87,9 +118,33 @@ export const KpiCards: React.FC<KpiCardsProps> = ({ data, onNavigate }) => {
                 <stop offset="100%" stopColor="#1a2228" stopOpacity="0.0" />
               </linearGradient>
             </defs>
-            <path d={areaPath} fill="url(#kpiSparkGrad)" />
-            <path d={linePath} fill="none" stroke="#1a2228" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-            <circle cx={lastPt.x} cy={lastPt.y} r="2.6" fill="#d6d6d2" stroke="#1a2228" strokeWidth="1.6" />
+            <path d={areaPath} fill="url(#kpiSparkGrad)" className="animate-filter-fade" />
+            <path
+              d={linePath}
+              pathLength={100}
+              strokeDasharray={100}
+              strokeDashoffset={100}
+              fill="none"
+              stroke="#1a2228"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="animate-svg-draw"
+            />
+            <circle
+              cx={lastPt.x}
+              cy={lastPt.y}
+              r="2.6"
+              fill="#d6d6d2"
+              stroke="#1a2228"
+              strokeWidth="1.6"
+              className="animate-confirm-pop"
+              style={{
+                transformOrigin: `${lastPt.x}px ${lastPt.y}px`,
+                animationDelay: '360ms',
+                opacity: 0,
+              }}
+            />
           </svg>
         </div>
 
@@ -112,7 +167,7 @@ export const KpiCards: React.FC<KpiCardsProps> = ({ data, onNavigate }) => {
 
         <div className="flex items-center justify-between my-[10px] gap-2 min-w-0">
           <div className="text-[24px] xl:text-[26px] font-semibold text-[#141414] tracking-[-0.03em] leading-none tabular-nums whitespace-nowrap">
-            {data.unitsSold.value}
+            <AnimatedNumber value={parseNumericMetric(data.unitsSold.value)} />
           </div>
 
           <div className="relative w-[40px] h-[40px] flex items-center justify-center shrink-0">
@@ -127,7 +182,10 @@ export const KpiCards: React.FC<KpiCardsProps> = ({ data, onNavigate }) => {
                 strokeWidth="4"
                 strokeLinecap="round"
                 strokeDasharray={circ}
-                strokeDashoffset={dashOffset}
+                strokeDashoffset={ringReady ? targetDashOffset : circ}
+                style={{
+                  transition: 'stroke-dashoffset 750ms cubic-bezier(0.16, 1, 0.3, 1)',
+                }}
               />
             </svg>
           </div>
@@ -152,7 +210,7 @@ export const KpiCards: React.FC<KpiCardsProps> = ({ data, onNavigate }) => {
 
         <div className="flex items-center justify-between my-[10px] gap-2 min-w-0">
           <div className="text-[24px] xl:text-[26px] font-semibold text-[#141414] tracking-[-0.03em] leading-none tabular-nums whitespace-nowrap">
-            {data.completedTransactions.value}
+            <AnimatedNumber value={parseNumericMetric(data.completedTransactions.value)} />
           </div>
 
           <svg width="56" height="34" viewBox="0 0 60 36" className="shrink-0">
@@ -165,15 +223,23 @@ export const KpiCards: React.FC<KpiCardsProps> = ({ data, onNavigate }) => {
               return (
                 <g key={idx}>
                   <rect x={x} y={2} width="4.2" height={maxH} rx="2" fill="rgba(0,0,0,0.08)" />
-                  <rect
-                    x={x}
-                    y={y}
-                    width="4.2"
-                    height={barH}
-                    rx="2"
-                    fill={isLast ? '#1b252e' : '#73736f'}
-                  />
-                  {isLast && <circle cx={x + 2.1} cy={y + 3.2} r="1" fill="#d5d5d1" />}
+                  <g
+                    className="animate-bar-grow"
+                    style={{
+                      transformOrigin: `${x + 2.1}px 34px`,
+                      animationDelay: `${idx * 45}ms`,
+                    }}
+                  >
+                    <rect
+                      x={x}
+                      y={y}
+                      width="4.2"
+                      height={barH}
+                      rx="2"
+                      fill={isLast ? '#1b252e' : '#73736f'}
+                    />
+                    {isLast && <circle cx={x + 2.1} cy={y + 3.2} r="1" fill="#d5d5d1" />}
+                  </g>
                 </g>
               );
             })}

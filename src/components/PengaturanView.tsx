@@ -85,7 +85,11 @@ export const PengaturanView: React.FC<PengaturanViewProps> = ({
 
           <div className="mt-[20px] pt-[18px] border-t border-dashed border-white/[0.12] flex items-center justify-between gap-3">
             <span className="text-[12px] text-[#9a9a96]">
-              {savedNotice ? 'Nama toko berhasil diperbarui.' : ''}
+              {savedNotice && (
+                <span className="animate-filter-fade inline-block">
+                  Nama toko berhasil diperbarui.
+                </span>
+              )}
             </span>
 
             <div className="flex items-center gap-[8px] shrink-0">

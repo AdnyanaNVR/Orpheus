@@ -20,6 +20,7 @@ import {
   KasirProduct,
   formatRupiah,
 } from '../data/kasirData';
+import { AnimatedNumber } from './AnimatedNumber';
 
 interface CartItem {
   id: string;
@@ -316,7 +317,10 @@ export const KasirView: React.FC = () => {
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-[12px] pb-1">
+              <div
+                key={`${searchQuery}-${sortField}-${sortDir}`}
+                className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-[12px] pb-1 animate-filter-fade"
+              >
                 {filteredProducts.map((product) => {
                   const inCart = getCartQuantity(product.id);
                   const remaining = Math.max(0, product.stock - inCart);
@@ -341,7 +345,7 @@ export const KasirView: React.FC = () => {
                           {product.name}
                         </div>
                         {inCart > 0 && (
-                          <span className="h-[22px] min-w-[22px] px-[6px] rounded-full bg-[#ededeb] text-[#141414] text-[11px] font-bold flex items-center justify-center tabular-nums shrink-0">
+                          <span className="h-[22px] min-w-[22px] px-[6px] rounded-full bg-[#ededeb] text-[#141414] text-[11px] font-bold flex items-center justify-center tabular-nums shrink-0 animate-confirm-pop">
                             {inCart}
                           </span>
                         )}
@@ -349,10 +353,19 @@ export const KasirView: React.FC = () => {
 
                       <div className="w-full mt-[14px]">
                         <div className="text-[13.5px] font-semibold text-[#ededeb] tabular-nums">
-                          {formatRupiah(product.price)}
+                          <AnimatedNumber
+                            value={product.price}
+                            duration={480}
+                            formatter={formatRupiah}
+                          />
                         </div>
                         <div className="mt-[2px] text-[11.5px] text-[#7c7c78] tabular-nums">
-                          {remaining} tersisa
+                          <AnimatedNumber
+                            value={remaining}
+                            startFrom="previous"
+                            duration={340}
+                          />{' '}
+                          tersisa
                         </div>
                       </div>
                     </button>
@@ -364,7 +377,7 @@ export const KasirView: React.FC = () => {
         </section>
 
         {/* Right: Current Sale Cart & Payment Panel (Fixed within viewport) */}
-        <aside className="col-span-12 lg:col-span-4 bg-[#171716] border border-white/[0.06] rounded-[20px] flex flex-col justify-between overflow-hidden min-h-0">
+        <aside className="col-span-12 lg:col-span-4 bg-[#171716] border border-white/[0.06] rounded-[20px] flex flex-col justify-between overflow-hidden min-h-0 animate-slide-right">
           {/* Top Sale Header */}
           <div className="p-[18px] pb-0 flex-1 flex flex-col min-h-0">
             <div className="flex items-center justify-between gap-2 shrink-0">
@@ -373,7 +386,7 @@ export const KasirView: React.FC = () => {
                   Transaksi saat ini
                 </h2>
                 <span className="min-w-[23px] h-[23px] px-[6px] rounded-full bg-[#ededeb] text-[#141414] text-[11px] font-bold flex items-center justify-center leading-none tabular-nums">
-                  {totalItemsCount}
+                  <AnimatedNumber value={totalItemsCount} startFrom="previous" duration={280} />
                 </span>
               </div>
 
@@ -407,7 +420,7 @@ export const KasirView: React.FC = () => {
                 {cart.map((item) => (
                   <div
                     key={item.id}
-                    className="rounded-[12px] bg-[#1d1d1b] border border-white/[0.06] px-[12px] py-[10px] flex items-center justify-between gap-2.5"
+                    className="rounded-[12px] bg-[#1d1d1b] border border-white/[0.06] px-[12px] py-[10px] flex items-center justify-between gap-2.5 animate-slide-right"
                   >
                     <div className="min-w-0 flex-1">
                       <div className="text-[12.5px] font-medium text-[#f2f2f0] truncate">
@@ -459,7 +472,12 @@ export const KasirView: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <span className="text-[#9e9e9a]">Subtotal</span>
                   <span className="tabular-nums text-[#f2f2f0] font-semibold">
-                    {formatRupiah(subtotal)}
+                    <AnimatedNumber
+                      value={subtotal}
+                      startFrom="previous"
+                      duration={320}
+                      formatter={formatRupiah}
+                    />
                   </span>
                 </div>
 
@@ -490,10 +508,16 @@ export const KasirView: React.FC = () => {
                 </div>
 
                 {discountAmount > 0 && (
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between animate-filter-fade">
                     <span className="text-[#9e9e9a]">Potongan ({appliedDiscountPercent}%)</span>
                     <span className="tabular-nums text-[#d6d6d2] font-medium">
-                      -{formatRupiah(discountAmount)}
+                      -
+                      <AnimatedNumber
+                        value={discountAmount}
+                        startFrom="previous"
+                        duration={320}
+                        formatter={formatRupiah}
+                      />
                     </span>
                   </div>
                 )}
@@ -501,7 +525,12 @@ export const KasirView: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <span className="text-[#9e9e9a]">Pajak 11%</span>
                   <span className="tabular-nums text-[#f2f2f0] font-semibold">
-                    {formatRupiah(taxAmount)}
+                    <AnimatedNumber
+                      value={taxAmount}
+                      startFrom="previous"
+                      duration={320}
+                      formatter={formatRupiah}
+                    />
                   </span>
                 </div>
               </div>
@@ -510,7 +539,12 @@ export const KasirView: React.FC = () => {
               <div className="flex items-baseline justify-between mt-[13px]">
                 <span className="text-[14.5px] font-semibold text-[#f3f3f1]">Total</span>
                 <span className="text-[28px] font-bold text-[#f3f3f1] tabular-nums tracking-[-0.03em] leading-none">
-                  {formatRupiah(total)}
+                  <AnimatedNumber
+                    value={total}
+                    startFrom="previous"
+                    duration={360}
+                    formatter={formatRupiah}
+                  />
                 </span>
               </div>
 
@@ -562,8 +596,8 @@ export const KasirView: React.FC = () => {
 
       {/* Modal: Animated Payment Processing / Cash Input / Confirmation */}
       {showPaymentModal && (
-        <div className="fixed inset-0 z-[120] bg-black/75 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="w-full max-w-[400px] rounded-[24px] bg-[#1a1a18] border border-white/[0.1] p-[24px] shadow-2xl">
+        <div className="fixed inset-0 z-[120] bg-black/75 backdrop-blur-xs flex items-center justify-center p-4 animate-filter-fade">
+          <div className="w-full max-w-[400px] rounded-[24px] bg-[#1a1a18] border border-white/[0.1] p-[24px] shadow-2xl animate-modal-up">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h3 className="text-[16.5px] font-semibold text-[#f3f3f1]">

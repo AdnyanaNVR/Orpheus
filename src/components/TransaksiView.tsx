@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Search, ArrowUpDown, ArrowUp, ArrowDown, X, RotateCcw } from 'lucide-react';
 import { formatRupiah } from '../data/kasirData';
+import { AnimatedNumber } from './AnimatedNumber';
 
 type PaymentMethod = 'QRIS' | 'Kartu' | 'Tunai';
 type TransactionStatus = 'Selesai' | 'Dikembalikan';
@@ -367,10 +368,10 @@ export const TransaksiView: React.FC<TransaksiViewProps> = ({ storeName }) => {
             Total pendapatan
           </div>
           <div className="text-[24px] lg:text-[26px] font-semibold text-[#141414] tracking-[-0.03em] leading-[1.15] tabular-nums my-[8px] whitespace-nowrap">
-            {formatRupiah(summary.totalRevenue)}
+            <AnimatedNumber value={summary.totalRevenue} formatter={formatRupiah} />
           </div>
           <div className="pt-[10px] border-t border-dashed border-black/[0.16] text-[12px] text-[#5c5c58] tabular-nums whitespace-nowrap">
-            {summary.completedCount.toLocaleString('id-ID')} transaksi selesai
+            <AnimatedNumber value={summary.completedCount} /> transaksi selesai
           </div>
         </div>
 
@@ -380,10 +381,10 @@ export const TransaksiView: React.FC<TransaksiViewProps> = ({ storeName }) => {
             Rata-rata transaksi
           </div>
           <div className="text-[24px] lg:text-[26px] font-semibold text-[#f3f3f1] tracking-[-0.03em] leading-[1.15] tabular-nums my-[8px] whitespace-nowrap">
-            {formatRupiah(summary.avgTransaction)}
+            <AnimatedNumber value={summary.avgTransaction} formatter={formatRupiah} />
           </div>
           <div className="pt-[10px] border-t border-dashed border-white/[0.12] text-[12px] text-[#848480] tabular-nums truncate">
-            {summary.totalUnitsSold.toLocaleString('id-ID')} unit terjual
+            <AnimatedNumber value={summary.totalUnitsSold} /> unit terjual
           </div>
         </div>
 
@@ -393,7 +394,7 @@ export const TransaksiView: React.FC<TransaksiViewProps> = ({ storeName }) => {
             Transaksi dikembalikan
           </div>
           <div className="text-[24px] lg:text-[26px] font-semibold text-[#f3f3f1] tracking-[-0.03em] leading-[1.15] tabular-nums my-[8px]">
-            {summary.returnedItems.length}
+            <AnimatedNumber value={summary.returnedItems.length} />
           </div>
           <div className="pt-[10px] border-t border-dashed border-white/[0.12] text-[12px] text-[#848480] truncate">
             {summarizeReturnedProducts(summary.returnedItems, 'Tidak ada transaksi dikembalikan')}
@@ -550,7 +551,10 @@ export const TransaksiView: React.FC<TransaksiViewProps> = ({ storeName }) => {
                 </th>
               </tr>
             </thead>
-            <tbody>
+            <tbody
+              key={`${methodFilter}-${searchQuery}-${sortKey}-${sortDir}`}
+              className="animate-filter-fade"
+            >
               {filteredAndSorted.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="py-12 text-center">
@@ -592,7 +596,11 @@ export const TransaksiView: React.FC<TransaksiViewProps> = ({ storeName }) => {
                           isReturned ? 'text-[#7c7c78] line-through' : 'text-[#ededeb]'
                         }`}
                       >
-                        {formatRupiah(calc.total)}
+                        <AnimatedNumber
+                          value={calc.total}
+                          duration={480}
+                          formatter={formatRupiah}
+                        />
                       </td>
                       <td className="py-[13px] px-[16px] text-[12.5px] text-right whitespace-nowrap">
                         <span
@@ -615,7 +623,10 @@ export const TransaksiView: React.FC<TransaksiViewProps> = ({ storeName }) => {
         </section>
 
         {detailTrx && (
-          <aside className="col-span-12 lg:col-span-4 bg-[#171716] border border-white/[0.08] rounded-[22px] p-[22px] min-w-0 min-h-0 overflow-y-auto [scrollbar-width:thin] [scrollbar-color:#333330_transparent]">
+          <aside
+            key={detailTrx.id}
+            className="col-span-12 lg:col-span-4 bg-[#171716] border border-white/[0.08] rounded-[22px] p-[22px] min-w-0 min-h-0 overflow-y-auto [scrollbar-width:thin] [scrollbar-color:#333330_transparent] animate-slide-right"
+          >
             {(() => {
               const calc = computeTotals(detailTrx);
               const isReturned = detailTrx.status === 'Dikembalikan';
@@ -669,7 +680,11 @@ export const TransaksiView: React.FC<TransaksiViewProps> = ({ storeName }) => {
                           {line.name} × {line.qty}
                         </span>
                         <span className="font-semibold text-[#f3f3f1] tabular-nums whitespace-nowrap">
-                          {formatRupiah(line.qty * line.unitPrice)}
+                          <AnimatedNumber
+                            value={line.qty * line.unitPrice}
+                            duration={500}
+                            formatter={formatRupiah}
+                          />
                         </span>
                       </div>
                     ))}
@@ -678,21 +693,34 @@ export const TransaksiView: React.FC<TransaksiViewProps> = ({ storeName }) => {
                       <div className="flex items-center justify-between">
                         <span>Subtotal</span>
                         <span className="tabular-nums text-[#b4b4b0]">
-                          {formatRupiah(calc.subtotal)}
+                          <AnimatedNumber
+                            value={calc.subtotal}
+                            duration={520}
+                            formatter={formatRupiah}
+                          />
                         </span>
                       </div>
                       {detailTrx.discountPercent > 0 && (
                         <div className="flex items-center justify-between">
                           <span>Diskon ({detailTrx.discountPercent}%)</span>
                           <span className="tabular-nums text-[#b4b4b0]">
-                            -{formatRupiah(calc.discountAmount)}
+                            -
+                            <AnimatedNumber
+                              value={calc.discountAmount}
+                              duration={520}
+                              formatter={formatRupiah}
+                            />
                           </span>
                         </div>
                       )}
                       <div className="flex items-center justify-between">
                         <span>Pajak 11%</span>
                         <span className="tabular-nums text-[#b4b4b0]">
-                          {formatRupiah(calc.taxAmount)}
+                          <AnimatedNumber
+                            value={calc.taxAmount}
+                            duration={520}
+                            formatter={formatRupiah}
+                          />
                         </span>
                       </div>
                     </div>
@@ -712,7 +740,11 @@ export const TransaksiView: React.FC<TransaksiViewProps> = ({ storeName }) => {
                           isReturned ? 'text-[#7c7c78] line-through' : 'text-[#f3f3f1]'
                         }`}
                       >
-                        {formatRupiah(calc.total)}
+                        <AnimatedNumber
+                          value={calc.total}
+                          duration={580}
+                          formatter={formatRupiah}
+                        />
                       </span>
                     </div>
                   </div>
@@ -758,11 +790,11 @@ export const TransaksiView: React.FC<TransaksiViewProps> = ({ storeName }) => {
 
       {returnTarget && (
         <div
-          className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 animate-filter-fade"
           onClick={() => setReturnTarget(null)}
         >
           <div
-            className="w-full max-w-[440px] bg-[#181817] border border-white/[0.12] rounded-[22px] p-[22px] shadow-2xl"
+            className="w-full max-w-[440px] bg-[#181817] border border-white/[0.12] rounded-[22px] p-[22px] shadow-2xl animate-modal-up"
             onClick={(e) => e.stopPropagation()}
           >
             {(() => {

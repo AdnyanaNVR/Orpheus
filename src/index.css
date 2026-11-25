@@ -73,6 +73,87 @@
   }
 }
 
+@keyframes view-up {
+  0% {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes filter-fade {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes slide-right {
+  0% {
+    opacity: 0;
+    transform: translateX(26px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes bar-grow {
+  0% {
+    opacity: 0.2;
+    transform: scaleY(0);
+  }
+  100% {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+}
+
+@keyframes cell-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.72);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes svg-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes modal-up {
+  0% {
+    opacity: 0;
+    transform: translateY(12px) scale(0.97);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes menu-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.95) translateY(-4px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
 .animate-qris-scan {
   animation: qris-scan 1.5s ease-in-out infinite;
 }
@@ -89,11 +170,52 @@
   animation: confirm-pop 0.38s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+.animate-view-up {
+  animation: view-up 0.38s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-filter-fade {
+  animation: filter-fade 0.24s ease-out both;
+}
+
+.animate-slide-right {
+  animation: slide-right 0.34s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-bar-grow {
+  transform-origin: bottom;
+  animation: bar-grow 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-cell-pop {
+  animation: cell-pop 0.36s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-svg-draw {
+  animation: svg-draw 0.72s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-modal-up {
+  animation: modal-up 0.26s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-menu-pop {
+  animation: menu-pop 0.16s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-qris-scan,
   .animate-card-wave,
   .animate-card-wave-delayed,
-  .animate-confirm-pop {
+  .animate-confirm-pop,
+  .animate-view-up,
+  .animate-filter-fade,
+  .animate-slide-right,
+  .animate-bar-grow,
+  .animate-cell-pop,
+  .animate-svg-draw,
+  .animate-modal-up,
+  .animate-menu-pop {
     animation: none;
   }
 }

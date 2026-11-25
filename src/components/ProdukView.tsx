@@ -11,6 +11,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { formatRupiah } from '../data/kasirData';
+import { AnimatedNumber } from './AnimatedNumber';
 
 interface InventoryItem {
   id: string;
@@ -346,10 +347,10 @@ export const ProdukView: React.FC = () => {
             Nilai stok
           </div>
           <div className="text-[24px] lg:text-[26px] font-semibold text-[#141414] tracking-[-0.03em] leading-[1.15] tabular-nums my-[8px] whitespace-nowrap">
-            {formatRupiah(summary.totalCostValue)}
+            <AnimatedNumber value={summary.totalCostValue} formatter={formatRupiah} />
           </div>
           <div className="pt-[10px] border-t border-dashed border-black/[0.16] text-[12px] text-[#5c5c58] tabular-nums whitespace-nowrap">
-            {summary.totalUnits.toLocaleString('id-ID')} unit tersedia
+            <AnimatedNumber value={summary.totalUnits} /> unit tersedia
           </div>
         </div>
 
@@ -359,7 +360,7 @@ export const ProdukView: React.FC = () => {
             Stok menipis
           </div>
           <div className="text-[24px] lg:text-[26px] font-semibold text-[#f3f3f1] tracking-[-0.03em] leading-[1.15] tabular-nums my-[8px]">
-            {summary.lowStockItems.length}
+            <AnimatedNumber value={summary.lowStockItems.length} />
           </div>
           <div className="pt-[10px] border-t border-dashed border-white/[0.12] text-[12px] text-[#848480] truncate">
             {summarizeProductNames(summary.lowStockItems, 'Semua stok aman')}
@@ -372,7 +373,7 @@ export const ProdukView: React.FC = () => {
             Stok habis
           </div>
           <div className="text-[24px] lg:text-[26px] font-semibold text-[#f3f3f1] tracking-[-0.03em] leading-[1.15] tabular-nums my-[8px]">
-            {summary.outOfStockItems.length}
+            <AnimatedNumber value={summary.outOfStockItems.length} />
           </div>
           <div className="pt-[10px] border-t border-dashed border-white/[0.12] text-[12px] text-[#848480] truncate">
             {summarizeProductNames(summary.outOfStockItems, 'Tidak ada produk habis')}
@@ -502,7 +503,7 @@ export const ProdukView: React.FC = () => {
                 </th>
               </tr>
             </thead>
-            <tbody>
+            <tbody key={`${searchQuery}-${sortKey}-${sortDir}`} className="animate-filter-fade">
               {filteredAndSorted.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="py-12 text-center">
@@ -538,7 +539,11 @@ export const ProdukView: React.FC = () => {
                         {item.name}
                       </td>
                       <td className="py-[13px] px-[16px] text-[13px] font-semibold text-[#ededeb] text-right tabular-nums whitespace-nowrap">
-                        {formatRupiah(item.sellPrice)}
+                        <AnimatedNumber
+                          value={item.sellPrice}
+                          duration={480}
+                          formatter={formatRupiah}
+                        />
                       </td>
                       <td className="py-[13px] px-[16px] text-[13px] text-right tabular-nums whitespace-nowrap">
                         <span
@@ -548,10 +553,21 @@ export const ProdukView: React.FC = () => {
                               : 'text-[#ededeb] font-medium'
                           }
                         >
-                          {formatRupiah(marginAmount)}
+                          <AnimatedNumber
+                            value={marginAmount}
+                            duration={480}
+                            formatter={formatRupiah}
+                          />
                         </span>
                         <span className="text-[11.5px] text-[#848480] ml-1.5">
-                          ({marginPercent.toFixed(1).replace('.', ',')}%)
+                          (
+                          <AnimatedNumber
+                            value={marginPercent}
+                            decimals={1}
+                            duration={480}
+                            formatter={(v) => `${v.toFixed(1).replace('.', ',')}%`}
+                          />
+                          )
                         </span>
                       </td>
                       <td className="py-[13px] px-[16px] text-[13px] text-right tabular-nums whitespace-nowrap">
@@ -564,7 +580,7 @@ export const ProdukView: React.FC = () => {
                               : 'text-[#e5e5e2] font-medium'
                           }
                         >
-                          {item.stock}
+                          <AnimatedNumber value={item.stock} duration={480} />
                         </span>
                         {isOut && (
                           <span className="text-[11.5px] text-[#7c7c78] ml-1.5">· Habis</span>
@@ -596,11 +612,11 @@ export const ProdukView: React.FC = () => {
 
       {isAddModalOpen && (
         <div
-          className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 animate-filter-fade"
           onClick={() => setIsAddModalOpen(false)}
         >
           <div
-            className="w-full max-w-[440px] bg-[#181817] border border-white/[0.12] rounded-[22px] p-[22px] shadow-2xl"
+            className="w-full max-w-[440px] bg-[#181817] border border-white/[0.12] rounded-[22px] p-[22px] shadow-2xl animate-modal-up"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-[16px]">
@@ -721,7 +737,7 @@ export const ProdukView: React.FC = () => {
           <div
             role="menu"
             style={{ top: contextMenu.y, left: contextMenu.x }}
-            className="fixed z-50 w-[200px] bg-[#222220] border border-white/[0.14] rounded-[4px] py-[4px] shadow-[0_10px_28px_rgba(0,0,0,0.72)] select-none"
+            className="fixed z-50 w-[200px] bg-[#222220] border border-white/[0.14] rounded-[4px] py-[4px] shadow-[0_10px_28px_rgba(0,0,0,0.72)] select-none animate-menu-pop"
           >
             <button
               type="button"
@@ -757,11 +773,11 @@ export const ProdukView: React.FC = () => {
 
       {selectedItem && (
         <div
-          className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 animate-filter-fade"
           onClick={closeProductActions}
         >
           <div
-            className="w-full max-w-[440px] bg-[#181817] border border-white/[0.12] rounded-[22px] p-[22px] shadow-2xl"
+            className="w-full max-w-[440px] bg-[#181817] border border-white/[0.12] rounded-[22px] p-[22px] shadow-2xl animate-modal-up"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-start justify-between gap-3 mb-[16px]">

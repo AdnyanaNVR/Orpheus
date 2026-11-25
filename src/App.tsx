@@ -63,74 +63,80 @@ export default function App() {
 
       {/* Main Content Shell with equal 28px clearance from left navbar (88px) and right edge */}
       <div className="relative w-full pl-[88px] sm:pl-[116px] pr-[16px] sm:pr-[28px] pt-[102px] pb-[20px]">
-        {activeTab === 'Dasbor' ? (
-          <main>
-            {/* Title Row */}
-            <div className="flex items-center justify-between">
-              <h1 className="text-[40px] font-semibold text-[#f3f3f1] tracking-[-0.03em] leading-[1.05]">
-                Dasbor
-              </h1>
-            </div>
-
-            {/* Sub-navigation & Action Toolbar */}
-            <div className="flex items-center justify-between gap-3 mt-[14px]">
-              {/* Period Filter Segmented Pill: Hari Ini | 7 Hari | 30 Hari */}
-              <div className="inline-flex items-center bg-[#21211f] border border-white/[0.05] rounded-full p-[3px] gap-[2px] shrink-0">
-                {PERIOD_FILTERS.map((item) => {
-                  const isActive = period === item;
-                  return (
-                    <button
-                      key={item}
-                      type="button"
-                      onClick={() => handlePeriodChange(item)}
-                      className={`px-[15px] py-[5.5px] rounded-full text-[12px] transition-colors cursor-pointer whitespace-nowrap ${
-                        isActive
-                          ? 'bg-[#545452] text-[#f3f3f1] font-medium'
-                          : 'text-[#9a9a96] hover:text-[#dcdcd8] font-normal'
-                      }`}
-                    >
-                      {item}
-                    </button>
-                  );
-                })}
+        <div key={activeTab} className="animate-view-up">
+          {activeTab === 'Dasbor' ? (
+            <main>
+              {/* Title Row */}
+              <div className="flex items-center justify-between">
+                <h1 className="text-[40px] font-semibold text-[#f3f3f1] tracking-[-0.03em] leading-[1.05]">
+                  Dasbor
+                </h1>
               </div>
-            </div>
 
-            {/* Row 1: 4 Stepped-Tone KPI Cards */}
-            <div className="mt-[14px]">
-              <KpiCards data={dataset.kpis} onNavigate={setActiveTab} />
-            </div>
-
-            {/* Row 2: Full-width Revenue Bar Chart (7 Hari / 30 Hari) */}
-            <div className="mt-[14px] h-[288px]">
-              <RevenueChartCard
-                range={revenueRange}
-                onRangeChange={setRevenueRange}
-              />
-            </div>
-
-            {/* Row 3: Transactions by Time Heatmap & Total Transactions Donut */}
-            <div className="grid grid-cols-12 gap-[14px] mt-[14px]">
-              <div className="col-span-12 lg:col-span-7 h-[228px]">
-                <VisitsByTimeCard data={dataset.heatmap} />
+              {/* Sub-navigation & Action Toolbar */}
+              <div className="flex items-center justify-between gap-3 mt-[14px]">
+                {/* Period Filter Segmented Pill: Hari Ini | 7 Hari | 30 Hari */}
+                <div className="inline-flex items-center bg-[#21211f] border border-white/[0.05] rounded-full p-[3px] gap-[2px] shrink-0">
+                  {PERIOD_FILTERS.map((item) => {
+                    const isActive = period === item;
+                    return (
+                      <button
+                        key={item}
+                        type="button"
+                        onClick={() => handlePeriodChange(item)}
+                        className={`px-[15px] py-[5.5px] rounded-full text-[12px] transition-all duration-200 cursor-pointer whitespace-nowrap ${
+                          isActive
+                            ? 'bg-[#545452] text-[#f3f3f1] font-medium shadow-sm'
+                            : 'text-[#9a9a96] hover:text-[#dcdcd8] font-normal'
+                        }`}
+                      >
+                        {item}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-              <div className="col-span-12 lg:col-span-5 h-[228px]">
-                <TotalVisitsCard data={dataset.totalTransactions} />
+
+              {/* Row 1: 4 Stepped-Tone KPI Cards */}
+              <div key={`kpi-${period}`} className="mt-[14px] animate-view-up">
+                <KpiCards data={dataset.kpis} onNavigate={setActiveTab} />
               </div>
-            </div>
-          </main>
-        ) : activeTab === 'Kasir' ? (
-          <KasirView />
-        ) : activeTab === 'Produk' ? (
-          <ProdukView />
-        ) : activeTab === 'Transaksi' ? (
-          <TransaksiView storeName={storeName} />
-        ) : (
-          <PengaturanView
-            storeName={storeName}
-            onSaveStoreName={handleSaveStoreName}
-          />
-        )}
+
+              {/* Row 2: Full-width Revenue Bar Chart (7 Hari / 30 Hari) */}
+              <div className="mt-[14px] h-[288px]">
+                <RevenueChartCard
+                  range={revenueRange}
+                  onRangeChange={setRevenueRange}
+                />
+              </div>
+
+              {/* Row 3: Transactions by Time Heatmap & Total Transactions Donut */}
+              <div
+                key={`charts-${period}`}
+                className="grid grid-cols-12 gap-[14px] mt-[14px] animate-view-up"
+                style={{ animationDelay: '70ms' }}
+              >
+                <div className="col-span-12 lg:col-span-7 h-[228px]">
+                  <VisitsByTimeCard data={dataset.heatmap} />
+                </div>
+                <div className="col-span-12 lg:col-span-5 h-[228px]">
+                  <TotalVisitsCard data={dataset.totalTransactions} />
+                </div>
+              </div>
+            </main>
+          ) : activeTab === 'Kasir' ? (
+            <KasirView />
+          ) : activeTab === 'Produk' ? (
+            <ProdukView />
+          ) : activeTab === 'Transaksi' ? (
+            <TransaksiView storeName={storeName} />
+          ) : (
+            <PengaturanView
+              storeName={storeName}
+              onSaveStoreName={handleSaveStoreName}
+            />
+          )}
+        </div>
       </div>
     </div>
   );

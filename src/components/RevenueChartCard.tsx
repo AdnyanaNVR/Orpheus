@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { REVENUE_BY_RANGE, RevenueRange } from '../data/dashboardData';
+import { AnimatedNumber } from './AnimatedNumber';
 
 interface RevenueChartCardProps {
   range: RevenueRange;
@@ -96,7 +97,12 @@ export const RevenueChartCard: React.FC<RevenueChartCardProps> = ({
             Pendapatan
           </h2>
           <span className="text-[11px] text-[#888884] ml-1 tabular-nums whitespace-nowrap truncate">
-            {config.totalFormatted} dalam {config.subtitle}
+            <AnimatedNumber
+              key={range}
+              value={Number(config.totalFormatted.replace(/[^\d]/g, '')) || 0}
+              formatter={(v) => `Rp${Math.round(v).toLocaleString('id-ID')}`}
+            />{' '}
+            dalam {config.subtitle}
           </span>
         </div>
 
@@ -148,7 +154,8 @@ export const RevenueChartCard: React.FC<RevenueChartCardProps> = ({
 
             {/* Daily Bars */}
             <div
-              className="relative z-10 grid h-full items-end px-[10px]"
+              key={range}
+              className="relative z-10 grid h-full items-end px-[10px] animate-view-up"
               style={{ gridTemplateColumns: `repeat(${points.length}, minmax(0, 1fr))` }}
             >
               {points.map((pt, idx) => {
@@ -156,6 +163,7 @@ export const RevenueChartCard: React.FC<RevenueChartCardProps> = ({
                 const isHighlighted = hoveredIndex === null || hoveredIndex === idx;
                 const isHoveredBar = hoveredIndex === idx;
                 const barWidthClass = range === '7 Hari' ? 'w-[42px]' : 'w-[22px]';
+                const delayMs = Math.min(idx * (range === '7 Hari' ? 48 : 16), 360);
 
                 return (
                   <div
@@ -171,25 +179,30 @@ export const RevenueChartCard: React.FC<RevenueChartCardProps> = ({
                       }`}
                       style={{ height: `${heightPct}%` }}
                     >
-                      {/* Base Dark Hatched Layer (always mounted, revealed smoothly when dimmed) */}
                       <div
-                        className="absolute inset-0 rounded-t-[7px] border border-white/[0.08]"
-                        style={{
-                          backgroundImage:
-                            'repeating-linear-gradient(-45deg, #1d1d1b 0px, #1d1d1b 3.5px, #353532 3.5px, #353532 5.2px)',
-                        }}
-                      />
+                        className="w-full h-full relative rounded-t-[7px] animate-bar-grow"
+                        style={{ animationDelay: `${delayMs}ms` }}
+                      >
+                        {/* Base Dark Hatched Layer (always mounted, revealed smoothly when dimmed) */}
+                        <div
+                          className="absolute inset-0 rounded-t-[7px] border border-white/[0.08]"
+                          style={{
+                            backgroundImage:
+                              'repeating-linear-gradient(-45deg, #1d1d1b 0px, #1d1d1b 3.5px, #353532 3.5px, #353532 5.2px)',
+                          }}
+                        />
 
-                      {/* Top Gradient Layer (smoothly crossfades via opacity, zero flicker) */}
-                      <div
-                        className={`absolute inset-0 rounded-t-[7px] transition-opacity duration-300 ease-out ${
-                          isHighlighted ? 'opacity-100' : 'opacity-0'
-                        }`}
-                        style={{
-                          background:
-                            'linear-gradient(180deg, #5c5c58 0%, #8f8f8c 32%, #d8d8d5 68%, #f5f5f3 100%)',
-                        }}
-                      />
+                        {/* Top Gradient Layer (smoothly crossfades via opacity, zero flicker) */}
+                        <div
+                          className={`absolute inset-0 rounded-t-[7px] transition-opacity duration-300 ease-out ${
+                            isHighlighted ? 'opacity-100' : 'opacity-0'
+                          }`}
+                          style={{
+                            background:
+                              'linear-gradient(180deg, #5c5c58 0%, #8f8f8c 32%, #d8d8d5 68%, #f5f5f3 100%)',
+                          }}
+                        />
+                      </div>
                     </div>
                   </div>
                 );

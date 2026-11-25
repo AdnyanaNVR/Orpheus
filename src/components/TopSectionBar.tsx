@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { Calendar, Bell, ChevronDown } from 'lucide-react';
 import { NavTab } from '../data/dashboardData';
+import { AnimatedNumber } from './AnimatedNumber';
 
 interface TopSectionBarProps {
   storeName: string;
@@ -102,13 +103,13 @@ export const TopSectionBar: React.FC<TopSectionBarProps> = ({
           >
             <Bell className="w-[16px] h-[16px]" strokeWidth={1.7} />
             <span className="absolute -top-[2px] -right-[2px] min-w-[18px] h-[18px] px-[4px] rounded-full bg-[#d6d6d2] border-[2px] border-[#171716] text-[9.5px] font-bold text-[#141414] flex items-center justify-center leading-none tabular-nums">
-              3
+              <AnimatedNumber value={3} duration={450} />
             </span>
           </button>
 
           {/* Popover: Notifications */}
           {openMenu === 'notif' && (
-            <div className="absolute right-0 top-[54px] z-50 w-[290px] rounded-[16px] bg-[#20201e] border border-white/[0.09] p-3.5 shadow-2xl">
+            <div className="absolute right-0 top-[54px] z-50 w-[290px] rounded-[16px] bg-[#20201e] border border-white/[0.09] p-3.5 shadow-2xl animate-menu-pop">
               <div className="flex items-center justify-between mb-2.5">
                 <span className="text-[12.5px] font-semibold text-[#f2f2f0]">Notifikasi</span>
                 <span className="text-[11px] text-[#888884]">3 belum dibaca</span>
@@ -149,7 +150,7 @@ export const TopSectionBar: React.FC<TopSectionBarProps> = ({
 
           {/* Popover: Profile */}
           {openMenu === 'profile' && (
-            <div className="absolute right-0 top-[54px] z-50 w-[225px] rounded-[16px] bg-[#20201e] border border-white/[0.09] p-3.5 shadow-2xl">
+            <div className="absolute right-0 top-[54px] z-50 w-[225px] rounded-[16px] bg-[#20201e] border border-white/[0.09] p-3.5 shadow-2xl animate-menu-pop">
               <div className="text-[12.5px] font-semibold text-[#f2f2f0] truncate">{storeName}</div>
               <div className="text-[11px] text-[#888884] mb-2.5">toko@orpheus.co</div>
               <div className="border-t border-white/[0.07] pt-2 text-[11.5px] text-[#888884] space-y-1">
