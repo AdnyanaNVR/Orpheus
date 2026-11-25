@@ -202,7 +202,11 @@ function summarizeReturnedProducts(records: TransactionRecord[], emptyLabel: str
   return `${productNames[0]} dan ${productNames.length - 1} lainnya`;
 }
 
-export const TransaksiView: React.FC = () => {
+interface TransaksiViewProps {
+  storeName: string;
+}
+
+export const TransaksiView: React.FC<TransaksiViewProps> = ({ storeName }) => {
   const [transactions, setTransactions] = useState<TransactionRecord[]>(INITIAL_TRANSACTIONS);
   const [searchQuery, setSearchQuery] = useState('');
   const [methodFilter, setMethodFilter] = useState<MethodFilter>('Semua');
@@ -645,7 +649,7 @@ export const TransaksiView: React.FC = () => {
                       />
                     </div>
                     <div className="text-[15.5px] font-semibold text-[#f3f3f1] tracking-[-0.01em] mt-[12px]">
-                      Orpheus Point of Sales
+                      {storeName}
                     </div>
                     <div className="mt-[4px] space-y-[3px] text-[11.5px] text-[#848480] tabular-nums">
                       <div>Bukti Pembayaran · ID {detailTrx.id}</div>

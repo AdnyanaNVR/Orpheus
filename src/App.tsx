@@ -14,14 +14,36 @@ import { TotalVisitsCard } from './components/TotalVisitsCard';
 import { KasirView } from './components/KasirView';
 import { ProdukView } from './components/ProdukView';
 import { TransaksiView } from './components/TransaksiView';
-import { SecondaryView } from './components/SecondaryView';
+import { PengaturanView } from './components/PengaturanView';
 
 const PERIOD_FILTERS: PeriodFilter[] = ['Hari Ini', '7 Hari', '30 Hari'];
+const STORE_NAME_STORAGE_KEY = 'orpheus_store_name';
+
+function getInitialStoreName(): string {
+  try {
+    const saved = window.localStorage.getItem(STORE_NAME_STORAGE_KEY);
+    return saved && saved.trim() ? saved.trim() : 'Orpheus Shop';
+  } catch {
+    return 'Orpheus Shop';
+  }
+}
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<NavTab>('Dasbor');
   const [period, setPeriod] = useState<PeriodFilter>('Hari Ini');
   const [revenueRange, setRevenueRange] = useState<RevenueRange>('7 Hari');
+  const [storeName, setStoreName] = useState<string>(getInitialStoreName);
+
+  const handleSaveStoreName = (nextName: string) => {
+    const trimmed = nextName.trim();
+    if (!trimmed) return;
+    setStoreName(trimmed);
+    try {
+      window.localStorage.setItem(STORE_NAME_STORAGE_KEY, trimmed);
+    } catch {
+      // ignore storage errors
+    }
+  };
 
   const handlePeriodChange = (next: PeriodFilter) => {
     setPeriod(next);
@@ -37,7 +59,7 @@ export default function App() {
       <SidebarNav activeTab={activeTab} onSelectTab={setActiveTab} />
 
       {/* Monochrome Floating Top Pill matching center container width */}
-      <TopSectionBar onNavigate={setActiveTab} />
+      <TopSectionBar storeName={storeName} onNavigate={setActiveTab} />
 
       {/* Main Content Shell with equal 28px clearance from left navbar (88px) and right edge */}
       <div className="relative w-full pl-[88px] sm:pl-[116px] pr-[16px] sm:pr-[28px] pt-[102px] pb-[20px]">
@@ -102,11 +124,11 @@ export default function App() {
         ) : activeTab === 'Produk' ? (
           <ProdukView />
         ) : activeTab === 'Transaksi' ? (
-          <TransaksiView />
+          <TransaksiView storeName={storeName} />
         ) : (
-          <SecondaryView
-            tab={activeTab}
-            onBackToDashboard={() => setActiveTab('Dasbor')}
+          <PengaturanView
+            storeName={storeName}
+            onSaveStoreName={handleSaveStoreName}
           />
         )}
       </div>
