@@ -74,7 +74,7 @@ export const VisitsByTimeCard: React.FC<VisitsByTimeCardProps> = ({ data }) => {
                 <div
                   key={day}
                   className="animate-cell-pop"
-                  style={{ animationDelay: `${(rIdx + cIdx) * 32}ms` }}
+                  style={{ animationDelay: `${860 + (rIdx + cIdx) * 52}ms` }}
                 >
                   <div
                     onMouseEnter={() => setHoveredCell({ r: rIdx, c: cIdx })}

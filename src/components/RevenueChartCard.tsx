@@ -16,6 +16,7 @@ export const RevenueChartCard: React.FC<RevenueChartCardProps> = ({
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [tooltipIndex, setTooltipIndex] = useState<number>(config.defaultActiveIndex);
   const leaveTimerRef = useRef<number | null>(null);
+  const isInternalToggleRef = useRef(false);
 
   useEffect(() => {
     setSelectedIndex(REVENUE_BY_RANGE[range].defaultActiveIndex);
@@ -114,7 +115,10 @@ export const RevenueChartCard: React.FC<RevenueChartCardProps> = ({
               <button
                 key={r}
                 type="button"
-                onClick={() => onRangeChange(r)}
+                onClick={() => {
+                  isInternalToggleRef.current = true;
+                  onRangeChange(r);
+                }}
                 className={`px-[12px] py-[4px] rounded-full text-[11px] transition-colors cursor-pointer whitespace-nowrap ${
                   isActive
                     ? 'bg-[#484846] text-[#f2f2f0] font-medium'
@@ -163,7 +167,9 @@ export const RevenueChartCard: React.FC<RevenueChartCardProps> = ({
                 const isHighlighted = hoveredIndex === null || hoveredIndex === idx;
                 const isHoveredBar = hoveredIndex === idx;
                 const barWidthClass = range === '7 Hari' ? 'w-[42px]' : 'w-[22px]';
-                const delayMs = Math.min(idx * (range === '7 Hari' ? 48 : 16), 360);
+                const baseChartDelay = isInternalToggleRef.current ? 0 : 720;
+                const delayMs =
+                  baseChartDelay + Math.min(idx * (range === '7 Hari' ? 68 : 24), 480);
 
                 return (
                   <div

@@ -15,6 +15,7 @@ import { KasirView } from './components/KasirView';
 import { ProdukView } from './components/ProdukView';
 import { TransaksiView } from './components/TransaksiView';
 import { PengaturanView } from './components/PengaturanView';
+import { AnimatedTitle } from './components/AnimatedTitle';
 
 const PERIOD_FILTERS: PeriodFilter[] = ['Hari Ini', '7 Hari', '30 Hari'];
 const STORE_NAME_STORAGE_KEY = 'orpheus_store_name';
@@ -67,13 +68,8 @@ export default function App() {
           {activeTab === 'Dasbor' ? (
             <main>
               {/* Title Row */}
-              <div
-                className="flex items-center justify-between animate-tab-up"
-                style={{ animationDelay: '0ms' }}
-              >
-                <h1 className="text-[40px] font-semibold text-[#f3f3f1] tracking-[-0.03em] leading-[1.05]">
-                  Dasbor
-                </h1>
+              <div className="flex items-center justify-between">
+                <AnimatedTitle text="Dasbor" />
               </div>
 
               {/* Sub-navigation & Action Toolbar */}

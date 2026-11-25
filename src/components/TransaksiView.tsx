@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Search, ArrowUpDown, ArrowUp, ArrowDown, X, RotateCcw } from 'lucide-react';
 import { formatRupiah } from '../data/kasirData';
 import { AnimatedNumber } from './AnimatedNumber';
+import { AnimatedTitle } from './AnimatedTitle';
 
 type PaymentMethod = 'QRIS' | 'Kartu' | 'Tunai';
 type TransactionStatus = 'Selesai' | 'Dikembalikan';
@@ -356,13 +357,8 @@ export const TransaksiView: React.FC<TransaksiViewProps> = ({ storeName }) => {
 
   return (
     <main className="lg:h-[calc(100vh-122px)] flex flex-col">
-      <div
-        className="flex items-center justify-between shrink-0 animate-tab-up"
-        style={{ animationDelay: '0ms' }}
-      >
-        <h1 className="text-[40px] font-semibold text-[#f3f3f1] tracking-[-0.03em] leading-[1.05]">
-          Transaksi
-        </h1>
+      <div className="flex items-center justify-between shrink-0">
+        <AnimatedTitle text="Transaksi" />
       </div>
 
       {/* 3-Card Transaction Summary Strip (Matches ProdukView Layout) */}

@@ -126,7 +126,8 @@ export const TotalVisitsCard: React.FC<TotalVisitsCardProps> = ({ data }) => {
                   stroke={seg.color}
                   strokeWidth="22"
                   style={{
-                    transition: 'stroke-dashoffset 760ms cubic-bezier(0.16, 1, 0.3, 1)',
+                    transition: 'stroke-dashoffset 1350ms cubic-bezier(0.16, 1, 0.3, 1)',
+                    transitionDelay: '920ms',
                   }}
                 />
               );
@@ -149,8 +150,8 @@ export const TotalVisitsCard: React.FC<TotalVisitsCardProps> = ({ data }) => {
                 }`}
                 style={{
                   transition:
-                    'stroke-dashoffset 700ms cubic-bezier(0.16, 1, 0.3, 1), opacity 150ms ease',
-                  transitionDelay: `${idx * 90}ms, 0ms`,
+                    'stroke-dashoffset 1350ms cubic-bezier(0.16, 1, 0.3, 1), opacity 150ms ease',
+                  transitionDelay: `${920 + idx * 150}ms, 0ms`,
                 }}
               />
             );

@@ -92,7 +92,7 @@
 @keyframes tab-up {
   0% {
     opacity: 0;
-    transform: translateY(52px);
+    transform: translateY(24px);
   }
   100% {
     opacity: 1;
@@ -191,7 +191,7 @@
 }
 
 .animate-tab-up {
-  animation: tab-up 0.72s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: tab-up 0.98s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .animate-filter-fade {
@@ -204,15 +204,15 @@
 
 .animate-bar-grow {
   transform-origin: bottom;
-  animation: bar-grow 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: bar-grow 1.1s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .animate-cell-pop {
-  animation: cell-pop 0.36s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: cell-pop 0.78s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .animate-svg-draw {
-  animation: svg-draw 0.72s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: svg-draw 1.25s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .animate-modal-up {

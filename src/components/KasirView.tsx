@@ -21,6 +21,7 @@ import {
   formatRupiah,
 } from '../data/kasirData';
 import { AnimatedNumber } from './AnimatedNumber';
+import { AnimatedTitle } from './AnimatedTitle';
 
 interface CartItem {
   id: string;
@@ -240,13 +241,8 @@ export const KasirView: React.FC = () => {
   return (
     <main className="lg:h-[calc(100vh-122px)] flex flex-col">
       {/* Clean Kasir Header */}
-      <div
-        className="flex items-center justify-between shrink-0 animate-tab-up"
-        style={{ animationDelay: '0ms' }}
-      >
-        <h1 className="text-[40px] font-semibold text-[#f3f3f1] tracking-[-0.03em] leading-[1.05]">
-          Kasir
-        </h1>
+      <div className="flex items-center justify-between shrink-0">
+        <AnimatedTitle text="Kasir" />
       </div>
 
       {/* Two-Column Monochrome POS Workspace: Only Product Grid Scrolls on Desktop */}

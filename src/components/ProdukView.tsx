@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { formatRupiah } from '../data/kasirData';
 import { AnimatedNumber } from './AnimatedNumber';
+import { AnimatedTitle } from './AnimatedTitle';
 
 interface InventoryItem {
   id: string;
@@ -335,13 +336,8 @@ export const ProdukView: React.FC = () => {
 
   return (
     <main className="lg:h-[calc(100vh-122px)] flex flex-col">
-      <div
-        className="flex items-center justify-between shrink-0 animate-tab-up"
-        style={{ animationDelay: '0ms' }}
-      >
-        <h1 className="text-[40px] font-semibold text-[#f3f3f1] tracking-[-0.03em] leading-[1.05]">
-          Produk
-        </h1>
+      <div className="flex items-center justify-between shrink-0">
+        <AnimatedTitle text="Produk" />
       </div>
 
       {/* 3-Card Inventory Summary Strip */}

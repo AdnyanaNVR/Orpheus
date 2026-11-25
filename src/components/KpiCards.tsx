@@ -75,7 +75,7 @@ export const KpiCards: React.FC<KpiCardsProps> = ({ data, onNavigate }) => {
                     className="animate-bar-grow"
                     style={{
                       transformOrigin: `${x + 5}px 38px`,
-                      animationDelay: `${idx * 85}ms`,
+                      animationDelay: `${680 + idx * 110}ms`,
                     }}
                   >
                     <rect x={x} y={y} width="10" height={barH} rx="3.5" fill={fills[idx]} />
@@ -124,7 +124,12 @@ export const KpiCards: React.FC<KpiCardsProps> = ({ data, onNavigate }) => {
                 <stop offset="100%" stopColor="#1a2228" stopOpacity="0.0" />
               </linearGradient>
             </defs>
-            <path d={areaPath} fill="url(#kpiSparkGrad)" className="animate-filter-fade" />
+            <path
+              d={areaPath}
+              fill="url(#kpiSparkGrad)"
+              className="animate-filter-fade"
+              style={{ animationDuration: '0.85s', animationDelay: '880ms' }}
+            />
             <path
               d={linePath}
               pathLength={100}
@@ -136,6 +141,7 @@ export const KpiCards: React.FC<KpiCardsProps> = ({ data, onNavigate }) => {
               strokeLinecap="round"
               strokeLinejoin="round"
               className="animate-svg-draw"
+              style={{ animationDelay: '720ms' }}
             />
             <circle
               cx={lastPt.x}
@@ -147,7 +153,7 @@ export const KpiCards: React.FC<KpiCardsProps> = ({ data, onNavigate }) => {
               className="animate-confirm-pop"
               style={{
                 transformOrigin: `${lastPt.x}px ${lastPt.y}px`,
-                animationDelay: '360ms',
+                animationDelay: '1350ms',
                 opacity: 0,
               }}
             />
@@ -193,7 +199,8 @@ export const KpiCards: React.FC<KpiCardsProps> = ({ data, onNavigate }) => {
                 strokeDasharray={circ}
                 strokeDashoffset={ringReady ? targetDashOffset : circ}
                 style={{
-                  transition: 'stroke-dashoffset 750ms cubic-bezier(0.16, 1, 0.3, 1)',
+                  transition: 'stroke-dashoffset 1250ms cubic-bezier(0.16, 1, 0.3, 1)',
+                  transitionDelay: '760ms',
                 }}
               />
             </svg>
@@ -239,7 +246,7 @@ export const KpiCards: React.FC<KpiCardsProps> = ({ data, onNavigate }) => {
                     className="animate-bar-grow"
                     style={{
                       transformOrigin: `${x + 2.1}px 34px`,
-                      animationDelay: `${idx * 45}ms`,
+                      animationDelay: `${780 + idx * 70}ms`,
                     }}
                   >
                     <rect

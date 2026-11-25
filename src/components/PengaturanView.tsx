@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { AnimatedTitle } from './AnimatedTitle';
 
 interface PengaturanViewProps {
   storeName: string;
@@ -47,13 +48,8 @@ export const PengaturanView: React.FC<PengaturanViewProps> = ({
 
   return (
     <main>
-      <div
-        className="flex items-center justify-between animate-tab-up"
-        style={{ animationDelay: '0ms' }}
-      >
-        <h1 className="text-[40px] font-semibold text-[#f3f3f1] tracking-[-0.03em] leading-[1.05]">
-          Pengaturan
-        </h1>
+      <div className="flex items-center justify-between">
+        <AnimatedTitle text="Pengaturan" />
       </div>
 
       <section
