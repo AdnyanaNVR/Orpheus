@@ -1,6 +1,327 @@
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import {
+  Search,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
+  X,
+  Plus,
+  Pencil,
+  PackagePlus,
+  Trash2,
+} from 'lucide-react';
+import { formatRupiah } from '../data/kasirData';
+
+interface InventoryItem {
+  id: string;
+  name: string;
+  costPrice: number;
+  sellPrice: number;
+  stock: number;
+}
+
+type SortKey = 'id' | 'name' | 'sellPrice' | 'margin' | 'stock';
+type SortDirection = 'asc' | 'desc';
+type ProductActionMode = 'edit' | 'restock' | 'delete';
+
+const INITIAL_PRODUK_INVENTORY: InventoryItem[] = [
+  { id: '0001', name: 'Braket Orpheus Kokoh — Hitam Doff', costPrice: 165000, sellPrice: 255000, stock: 140 },
+  { id: '0002', name: 'Pin Rak Kuningan Giling (Isi 20)', costPrice: 290000, sellPrice: 450000, stock: 95 },
+  { id: '0003', name: 'Gusset Baja Tersembunyi 8"', costPrice: 180000, sellPrice: 270000, stock: 112 },
+  { id: '0004', name: 'Kit Rel Aluminium Anodized', costPrice: 460000, sellPrice: 680000, stock: 4 },
+  { id: '0005', name: 'Engsel Pivot Presisi — Grafit', costPrice: 245000, sellPrice: 385000, stock: 128 },
+  { id: '0006', name: 'Klem Kaca Tempered 10mm', costPrice: 105000, sellPrice: 165000, stock: 165 },
+  { id: '0007', name: 'Set Rak Modular Ruang Display', costPrice: 780000, sellPrice: 1150000, stock: 3 },
+  { id: '0008', name: 'Baut Jangkar Beton M10 (Isi 10)', costPrice: 75000, sellPrice: 120000, stock: 210 },
+  { id: '0009', name: 'Sekrup Kayu Kepala Rata — Hitam', costPrice: 28000, sellPrice: 45000, stock: 264 },
+  { id: '0010', name: 'Bantalan Karet Anti-Selip 4mm', costPrice: 22000, sellPrice: 35000, stock: 145 },
+  { id: '0011', name: 'Rel Laci Soft-Close 450mm', costPrice: 138000, sellPrice: 210000, stock: 72 },
+  { id: '0012', name: 'Engsel Pivot Mini — Hitam Matte', costPrice: 145000, sellPrice: 225000, stock: 0 },
+];
+
+const LOW_STOCK_THRESHOLD = 5;
+
+function summarizeProductNames(items: InventoryItem[], emptyLabel: string): string {
+  if (items.length === 0) return emptyLabel;
+  if (items.length === 1) return items[0].name;
+  return `${items[0].name} dan ${items.length - 1} lainnya`;
+}
 
 export const ProdukView: React.FC = () => {
+  const [items, setItems] = useState<InventoryItem[]>(INITIAL_PRODUK_INVENTORY);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortKey, setSortKey] = useState<SortKey>('id');
+  const [sortDir, setSortDir] = useState<SortDirection>('asc');
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [newName, setNewName] = useState('');
+  const [newSellPrice, setNewSellPrice] = useState('');
+  const [newCostPrice, setNewCostPrice] = useState('');
+  const [newStock, setNewStock] = useState('');
+  const [formError, setFormError] = useState('');
+
+  const [contextMenu, setContextMenu] = useState<{
+    item: InventoryItem;
+    x: number;
+    y: number;
+  } | null>(null);
+
+  const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
+  const [actionMode, setActionMode] = useState<ProductActionMode>('edit');
+  const [editName, setEditName] = useState('');
+  const [editSellPrice, setEditSellPrice] = useState('');
+  const [editCostPrice, setEditCostPrice] = useState('');
+  const [editStock, setEditStock] = useState('');
+  const [restockAmount, setRestockAmount] = useState('');
+  const [actionError, setActionError] = useState('');
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 60);
+      setContextMenu(null);
+    };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setContextMenu(null);
+      }
+    };
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const nextProductId = useMemo(() => {
+    const maxId = items.reduce((max, item) => {
+      const numeric = Number.parseInt(item.id, 10);
+      return Number.isFinite(numeric) ? Math.max(max, numeric) : max;
+    }, 0);
+    return String(maxId + 1).padStart(4, '0');
+  }, [items]);
+
+  const openContextMenu = (e: React.MouseEvent<HTMLTableRowElement>, item: InventoryItem) => {
+    const menuWidth = 200;
+    const menuHeight = 134;
+    const padding = 10;
+    const x = Math.min(e.clientX, window.innerWidth - menuWidth - padding);
+    const y = Math.min(e.clientY, window.innerHeight - menuHeight - padding);
+    setContextMenu({
+      item,
+      x: Math.max(padding, x),
+      y: Math.max(padding, y),
+    });
+  };
+
+  const chooseContextAction = (mode: ProductActionMode) => {
+    if (!contextMenu) return;
+    const target = contextMenu.item;
+    setContextMenu(null);
+    setSelectedItem(target);
+    setActionMode(mode);
+    setEditName(target.name);
+    setEditSellPrice(String(target.sellPrice));
+    setEditCostPrice(String(target.costPrice));
+    setEditStock(String(target.stock));
+    setRestockAmount('');
+    setActionError('');
+  };
+
+  const closeProductActions = () => {
+    setSelectedItem(null);
+    setActionError('');
+  };
+
+  const handleSaveEdit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedItem) return;
+
+    const trimmedName = editName.trim();
+    const parsedSell = Number(editSellPrice);
+    const parsedCost = Number(editCostPrice);
+    const parsedStock = Number(editStock);
+
+    if (!trimmedName) {
+      setActionError('Nama produk wajib diisi.');
+      return;
+    }
+    if (editSellPrice.trim() === '' || !Number.isFinite(parsedSell) || parsedSell <= 0) {
+      setActionError('Harga jual wajib diisi dan lebih dari 0.');
+      return;
+    }
+    if (editCostPrice.trim() === '' || !Number.isFinite(parsedCost) || parsedCost < 0) {
+      setActionError('Harga modal wajib diisi dan minimal 0.');
+      return;
+    }
+    if (!Number.isInteger(parsedStock) || parsedStock < 0) {
+      setActionError('Stok harus berupa bilangan bulat minimal 0.');
+      return;
+    }
+
+    setItems((prev) =>
+      prev.map((item) =>
+        item.id === selectedItem.id
+          ? {
+              ...item,
+              name: trimmedName,
+              sellPrice: Math.round(parsedSell),
+              costPrice: Math.round(parsedCost),
+              stock: parsedStock,
+            }
+          : item
+      )
+    );
+    closeProductActions();
+  };
+
+  const handleConfirmRestock = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedItem) return;
+
+    const added = Number(restockAmount);
+    if (!Number.isInteger(added) || added <= 0) {
+      setActionError('Jumlah tambah stok harus berupa bilangan bulat minimal 1.');
+      return;
+    }
+
+    setItems((prev) =>
+      prev.map((item) =>
+        item.id === selectedItem.id ? { ...item, stock: item.stock + added } : item
+      )
+    );
+    closeProductActions();
+  };
+
+  const handleConfirmDelete = () => {
+    if (!selectedItem) return;
+    setItems((prev) => prev.filter((item) => item.id !== selectedItem.id));
+    closeProductActions();
+  };
+
+  const openAddModal = () => {
+    setNewName('');
+    setNewSellPrice('');
+    setNewCostPrice('');
+    setNewStock('');
+    setFormError('');
+    setIsAddModalOpen(true);
+  };
+
+  const handleAddProduct = (e: React.FormEvent) => {
+    e.preventDefault();
+    const trimmedName = newName.trim();
+    const parsedSell = Number(newSellPrice);
+    const parsedStock = Number(newStock);
+    const parsedCost = Number(newCostPrice);
+
+    if (!trimmedName) {
+      setFormError('Nama produk wajib diisi.');
+      return;
+    }
+    if (newSellPrice.trim() === '' || !Number.isFinite(parsedSell) || parsedSell <= 0) {
+      setFormError('Harga jual wajib diisi dan lebih dari 0.');
+      return;
+    }
+    if (newCostPrice.trim() === '' || !Number.isFinite(parsedCost) || parsedCost < 0) {
+      setFormError('Harga modal wajib diisi dan minimal 0.');
+      return;
+    }
+    if (newStock.trim() === '' || !Number.isInteger(parsedStock) || parsedStock < 0) {
+      setFormError('Stok awal wajib diisi berupa bilangan bulat minimal 0.');
+      return;
+    }
+
+    const created: InventoryItem = {
+      id: nextProductId,
+      name: trimmedName,
+      sellPrice: Math.round(parsedSell),
+      costPrice: Math.round(parsedCost),
+      stock: parsedStock,
+    };
+
+    setItems((prev) => [...prev, created]);
+    setIsAddModalOpen(false);
+  };
+
+  const summary = useMemo(() => {
+    const totalCostValue = items.reduce(
+      (sum, item) => sum + item.costPrice * item.stock,
+      0
+    );
+    const totalUnits = items.reduce((sum, item) => sum + item.stock, 0);
+    const lowStockItems = items.filter(
+      (item) => item.stock > 0 && item.stock <= LOW_STOCK_THRESHOLD
+    );
+    const outOfStockItems = items.filter((item) => item.stock === 0);
+
+    return {
+      totalCostValue,
+      totalUnits,
+      lowStockItems,
+      outOfStockItems,
+    };
+  }, [items]);
+
+  const handleSort = (key: SortKey) => {
+    if (sortKey === key) {
+      setSortDir((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortKey(key);
+      setSortDir('asc');
+    }
+  };
+
+  const filteredAndSorted = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    const list = q
+      ? items.filter(
+          (item) => item.name.toLowerCase().includes(q) || item.id.toLowerCase().includes(q)
+        )
+      : [...items];
+
+    list.sort((a, b) => {
+      if (sortKey === 'id') {
+        return sortDir === 'asc'
+          ? a.id.localeCompare(b.id, 'id')
+          : b.id.localeCompare(a.id, 'id');
+      }
+      if (sortKey === 'name') {
+        return sortDir === 'asc'
+          ? a.name.localeCompare(b.name, 'id')
+          : b.name.localeCompare(a.name, 'id');
+      }
+      if (sortKey === 'sellPrice') {
+        return sortDir === 'asc' ? a.sellPrice - b.sellPrice : b.sellPrice - a.sellPrice;
+      }
+      if (sortKey === 'margin') {
+        const marginA = a.sellPrice - a.costPrice;
+        const marginB = b.sellPrice - b.costPrice;
+        return sortDir === 'asc' ? marginA - marginB : marginB - marginA;
+      }
+      return sortDir === 'asc' ? a.stock - b.stock : b.stock - a.stock;
+    });
+
+    return list;
+  }, [items, searchQuery, sortKey, sortDir]);
+
+  const renderSortIcon = (key: SortKey) => {
+    if (sortKey !== key) {
+      return <ArrowUpDown className="w-[13px] h-[13px] text-[#6e6e6a] shrink-0" strokeWidth={1.8} />;
+    }
+    return sortDir === 'asc' ? (
+      <ArrowUp className="w-[13px] h-[13px] text-[#f3f3f1] shrink-0" strokeWidth={2.2} />
+    ) : (
+      <ArrowDown className="w-[13px] h-[13px] text-[#f3f3f1] shrink-0" strokeWidth={2.2} />
+    );
+  };
+
   return (
     <main>
       <div className="flex items-center justify-between">
@@ -8,6 +329,631 @@ export const ProdukView: React.FC = () => {
           Produk
         </h1>
       </div>
+
+      {/* 3-Card Inventory Summary Strip */}
+      <section className="grid grid-cols-1 md:grid-cols-3 gap-[14px] mt-[16px]">
+        {/* Card 1: Stock Value (Bright Monochrome Surface) */}
+        <div className="bg-[#f0f0ee] rounded-[22px] px-[22px] py-[18px] flex flex-col justify-between min-h-[132px] overflow-hidden">
+          <div className="text-[12px] font-medium text-[#2c2c2a] whitespace-nowrap">
+            Nilai stok
+          </div>
+          <div className="text-[24px] lg:text-[26px] font-semibold text-[#141414] tracking-[-0.03em] leading-[1.15] tabular-nums my-[8px] whitespace-nowrap">
+            {formatRupiah(summary.totalCostValue)}
+          </div>
+          <div className="pt-[10px] border-t border-dashed border-black/[0.16] text-[12px] text-[#5c5c58] tabular-nums whitespace-nowrap">
+            {summary.totalUnits.toLocaleString('id-ID')} unit tersedia
+          </div>
+        </div>
+
+        {/* Card 2: Low Stock */}
+        <div className="bg-[#171716] border border-white/[0.08] rounded-[22px] px-[22px] py-[18px] flex flex-col justify-between min-h-[132px] overflow-hidden">
+          <div className="text-[12px] font-medium text-[#9e9e9a] whitespace-nowrap">
+            Stok menipis
+          </div>
+          <div className="text-[24px] lg:text-[26px] font-semibold text-[#f3f3f1] tracking-[-0.03em] leading-[1.15] tabular-nums my-[8px]">
+            {summary.lowStockItems.length}
+          </div>
+          <div className="pt-[10px] border-t border-dashed border-white/[0.12] text-[12px] text-[#848480] truncate">
+            {summarizeProductNames(summary.lowStockItems, 'Semua stok aman')}
+          </div>
+        </div>
+
+        {/* Card 3: Out of Stock */}
+        <div className="bg-[#171716] border border-white/[0.08] rounded-[22px] px-[22px] py-[18px] flex flex-col justify-between min-h-[132px] overflow-hidden">
+          <div className="text-[12px] font-medium text-[#9e9e9a] whitespace-nowrap">
+            Stok habis
+          </div>
+          <div className="text-[24px] lg:text-[26px] font-semibold text-[#f3f3f1] tracking-[-0.03em] leading-[1.15] tabular-nums my-[8px]">
+            {summary.outOfStockItems.length}
+          </div>
+          <div className="pt-[10px] border-t border-dashed border-white/[0.12] text-[12px] text-[#848480] truncate">
+            {summarizeProductNames(summary.outOfStockItems, 'Tidak ada produk habis')}
+          </div>
+        </div>
+      </section>
+
+      {/* Search Bar & Sortable Product Table */}
+      <section className="mt-[16px] bg-[#171716] border border-white/[0.08] rounded-[22px] p-[20px]">
+        {/* Toolbar: White-before-focus Search Input + Tambah produk Button */}
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-[16px]">
+          <div className="group relative w-full sm:w-[340px]">
+            <Search
+              className="w-[15px] h-[15px] text-[#141414] group-focus-within:text-[#848480] absolute left-[14px] top-1/2 -translate-y-1/2 pointer-events-none transition-colors"
+              strokeWidth={1.9}
+            />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Cari produk..."
+              className="w-full h-[40px] rounded-[12px] bg-[#ededeb] hover:bg-white focus:bg-[#1c1c1a] border border-[#2a2a28] focus:border-white/[0.22] pl-[40px] pr-[36px] text-[12.5px] font-medium text-[#141414] focus:text-[#f2f2f0] placeholder-[#646460] focus:placeholder-[#787874] focus:outline-none transition-colors"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                aria-label="Hapus pencarian"
+                className="absolute right-[10px] top-1/2 -translate-y-1/2 text-[#5c5c58] group-focus-within:text-[#848480] hover:text-[#141414] group-focus-within:hover:text-white transition-colors cursor-pointer"
+              >
+                <X className="w-[14px] h-[14px]" />
+              </button>
+            )}
+          </div>
+
+          <button
+            type="button"
+            onClick={openAddModal}
+            className="h-[40px] px-[18px] rounded-full bg-[#ededeb] text-[#141414] hover:bg-white text-[12.5px] font-semibold inline-flex items-center gap-[7px] transition-colors cursor-pointer whitespace-nowrap"
+          >
+            <Plus className="w-[15px] h-[15px]" strokeWidth={2.2} />
+            <span>Tambah produk</span>
+          </button>
+        </div>
+
+        {/* Product Table */}
+        <div className="overflow-x-auto rounded-[14px] border border-white/[0.06] bg-[#141413]">
+          <table className="w-full border-collapse text-left">
+            <thead>
+              <tr className="bg-[#1b1b19] border-b border-white/[0.07]">
+                <th className="py-[12px] px-[16px] w-[96px]">
+                  <button
+                    type="button"
+                    onClick={() => handleSort('id')}
+                    className={`inline-flex items-center gap-[6px] text-[12px] font-semibold transition-colors cursor-pointer whitespace-nowrap ${
+                      sortKey === 'id'
+                        ? 'text-[#f3f3f1]'
+                        : 'text-[#9e9e9a] hover:text-[#f3f3f1]'
+                    }`}
+                  >
+                    <span>ID</span>
+                    {renderSortIcon('id')}
+                  </button>
+                </th>
+                <th className="py-[12px] px-[16px]">
+                  <button
+                    type="button"
+                    onClick={() => handleSort('name')}
+                    className={`inline-flex items-center gap-[6px] text-[12px] font-semibold transition-colors cursor-pointer whitespace-nowrap ${
+                      sortKey === 'name'
+                        ? 'text-[#f3f3f1]'
+                        : 'text-[#9e9e9a] hover:text-[#f3f3f1]'
+                    }`}
+                  >
+                    <span>Nama</span>
+                    {renderSortIcon('name')}
+                  </button>
+                </th>
+                <th className="py-[12px] px-[16px] text-right">
+                  <button
+                    type="button"
+                    onClick={() => handleSort('sellPrice')}
+                    className={`inline-flex items-center justify-end gap-[6px] text-[12px] font-semibold transition-colors cursor-pointer whitespace-nowrap ${
+                      sortKey === 'sellPrice'
+                        ? 'text-[#f3f3f1]'
+                        : 'text-[#9e9e9a] hover:text-[#f3f3f1]'
+                    }`}
+                  >
+                    <span>Harga</span>
+                    {renderSortIcon('sellPrice')}
+                  </button>
+                </th>
+                <th className="py-[12px] px-[16px] text-right">
+                  <button
+                    type="button"
+                    onClick={() => handleSort('margin')}
+                    className={`inline-flex items-center justify-end gap-[6px] text-[12px] font-semibold transition-colors cursor-pointer whitespace-nowrap ${
+                      sortKey === 'margin'
+                        ? 'text-[#f3f3f1]'
+                        : 'text-[#9e9e9a] hover:text-[#f3f3f1]'
+                    }`}
+                  >
+                    <span>Margin</span>
+                    {renderSortIcon('margin')}
+                  </button>
+                </th>
+                <th className="py-[12px] px-[16px] text-right">
+                  <button
+                    type="button"
+                    onClick={() => handleSort('stock')}
+                    className={`inline-flex items-center justify-end gap-[6px] text-[12px] font-semibold transition-colors cursor-pointer whitespace-nowrap ${
+                      sortKey === 'stock'
+                        ? 'text-[#f3f3f1]'
+                        : 'text-[#9e9e9a] hover:text-[#f3f3f1]'
+                    }`}
+                  >
+                    <span>Stok</span>
+                    {renderSortIcon('stock')}
+                  </button>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredAndSorted.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="py-12 text-center">
+                    <div className="text-[13.5px] font-medium text-[#f2f2f0]">
+                      Produk tidak ditemukan
+                    </div>
+                    <p className="text-[12px] text-[#7c7c78] mt-1">
+                      Coba kata kunci pencarian lain.
+                    </p>
+                  </td>
+                </tr>
+              ) : (
+                filteredAndSorted.map((item) => {
+                  const isOut = item.stock === 0;
+                  const isLow = item.stock > 0 && item.stock <= LOW_STOCK_THRESHOLD;
+                  const marginAmount = item.sellPrice - item.costPrice;
+                  const marginPercent =
+                    item.sellPrice > 0 ? (marginAmount / item.sellPrice) * 100 : 0;
+                  return (
+                    <tr
+                      key={item.id}
+                      onClick={(e) => openContextMenu(e, item)}
+                      className={`border-t border-white/[0.05] transition-colors cursor-pointer ${
+                        contextMenu?.item.id === item.id
+                          ? 'bg-white/[0.07]'
+                          : 'hover:bg-white/[0.04]'
+                      }`}
+                    >
+                      <td className="py-[13px] px-[16px] text-[12.5px] font-medium text-[#9e9e9a] tabular-nums whitespace-nowrap">
+                        {item.id}
+                      </td>
+                      <td className="py-[13px] px-[16px] text-[13px] font-medium text-[#f2f2f0]">
+                        {item.name}
+                      </td>
+                      <td className="py-[13px] px-[16px] text-[13px] font-semibold text-[#ededeb] text-right tabular-nums whitespace-nowrap">
+                        {formatRupiah(item.sellPrice)}
+                      </td>
+                      <td className="py-[13px] px-[16px] text-[13px] text-right tabular-nums whitespace-nowrap">
+                        <span
+                          className={
+                            marginAmount < 0
+                              ? 'text-[#9e9e9a] font-medium'
+                              : 'text-[#ededeb] font-medium'
+                          }
+                        >
+                          {formatRupiah(marginAmount)}
+                        </span>
+                        <span className="text-[11.5px] text-[#848480] ml-1.5">
+                          ({marginPercent.toFixed(1).replace('.', ',')}%)
+                        </span>
+                      </td>
+                      <td className="py-[13px] px-[16px] text-[13px] text-right tabular-nums whitespace-nowrap">
+                        <span
+                          className={
+                            isOut
+                              ? 'text-[#7c7c78] font-medium'
+                              : isLow
+                              ? 'text-[#d6d6d2] font-semibold'
+                              : 'text-[#e5e5e2] font-medium'
+                          }
+                        >
+                          {item.stock}
+                        </span>
+                        {isOut && (
+                          <span className="text-[11.5px] text-[#7c7c78] ml-1.5">· Habis</span>
+                        )}
+                        {isLow && (
+                          <span className="text-[11.5px] text-[#9e9e9a] ml-1.5">· Menipis</span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <button
+        type="button"
+        onClick={scrollToTop}
+        aria-label="Kembali ke atas"
+        title="Kembali ke atas"
+        className={`fixed bottom-6 right-6 z-40 w-[42px] h-[42px] rounded-full bg-[#ededeb] text-[#141414] hover:bg-white border border-white/15 shadow-[0_10px_28px_rgba(0,0,0,0.45)] flex items-center justify-center transition-all duration-200 cursor-pointer ${
+          isScrolled ? 'opacity-100 scale-100' : 'opacity-70 hover:opacity-100 scale-95 hover:scale-100'
+        }`}
+      >
+        <ArrowUp className="w-[18px] h-[18px]" strokeWidth={2.1} />
+      </button>
+
+      {isAddModalOpen && (
+        <div
+          className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={() => setIsAddModalOpen(false)}
+        >
+          <div
+            className="w-full max-w-[440px] bg-[#181817] border border-white/[0.12] rounded-[22px] p-[22px] shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-[16px]">
+              <div>
+                <h2 className="text-[18px] font-semibold text-[#f3f3f1] tracking-[-0.02em]">
+                  Tambah produk
+                </h2>
+                <p className="text-[12px] text-[#848480] mt-0.5 tabular-nums">
+                  ID produk otomatis: {nextProductId}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsAddModalOpen(false)}
+                aria-label="Tutup modal"
+                className="w-[32px] h-[32px] rounded-full bg-[#242422] hover:bg-[#2e2e2b] text-[#b4b4b0] hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+              >
+                <X className="w-[15px] h-[15px]" />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddProduct} className="space-y-[14px]">
+              <div>
+                <label className="block text-[12px] font-medium text-[#b4b4b0] mb-[6px]">
+                  Nama produk
+                </label>
+                <input
+                  type="text"
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
+                  placeholder="Contoh: Braket Sudut Aluminium 12&quot;"
+                  autoFocus
+                  className="w-full h-[40px] rounded-[12px] bg-[#1e1e1c] border border-white/[0.1] px-[13px] text-[13px] text-[#f2f2f0] placeholder-[#686864] focus:outline-none focus:border-white/[0.28]"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-[12px]">
+                <div>
+                  <label className="block text-[12px] font-medium text-[#b4b4b0] mb-[6px]">
+                    Harga jual (Rp)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="any"
+                    value={newSellPrice}
+                    onChange={(e) => setNewSellPrice(e.target.value)}
+                    placeholder="250000"
+                    className="w-full h-[40px] rounded-[12px] bg-[#1e1e1c] border border-white/[0.1] px-[13px] text-[13px] text-[#f2f2f0] placeholder-[#686864] tabular-nums focus:outline-none focus:border-white/[0.28]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[12px] font-medium text-[#b4b4b0] mb-[6px]">
+                    Stok awal
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={newStock}
+                    onChange={(e) => setNewStock(e.target.value)}
+                    placeholder="25"
+                    className="w-full h-[40px] rounded-[12px] bg-[#1e1e1c] border border-white/[0.1] px-[13px] text-[13px] text-[#f2f2f0] placeholder-[#686864] tabular-nums focus:outline-none focus:border-white/[0.28]"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[12px] font-medium text-[#b4b4b0] mb-[6px]">
+                  Harga modal (Rp)
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  step="any"
+                  value={newCostPrice}
+                  onChange={(e) => setNewCostPrice(e.target.value)}
+                  placeholder="165000"
+                  className="w-full h-[40px] rounded-[12px] bg-[#1e1e1c] border border-white/[0.1] px-[13px] text-[13px] text-[#f2f2f0] placeholder-[#686864] tabular-nums focus:outline-none focus:border-white/[0.28]"
+                />
+              </div>
+
+              {formError && (
+                <div className="rounded-[10px] bg-white/[0.05] border border-white/[0.12] px-[12px] py-[8px] text-[12px] text-[#f2f2f0]">
+                  {formError}
+                </div>
+              )}
+
+              <div className="pt-[6px] flex items-center justify-end gap-[10px]">
+                <button
+                  type="button"
+                  onClick={() => setIsAddModalOpen(false)}
+                  className="h-[40px] px-[18px] rounded-full bg-[#242422] hover:bg-[#2e2e2b] text-[#e5e5e2] text-[12.5px] font-medium transition-colors cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="h-[40px] px-[20px] rounded-full bg-[#ededeb] hover:bg-white text-[#141414] text-[12.5px] font-semibold transition-colors cursor-pointer"
+                >
+                  Simpan produk
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+      {contextMenu && (
+        <>
+          <div
+            className="fixed inset-0 z-40"
+            onClick={() => setContextMenu(null)}
+            onContextMenu={(e) => {
+              e.preventDefault();
+              setContextMenu(null);
+            }}
+          />
+          <div
+            role="menu"
+            style={{ top: contextMenu.y, left: contextMenu.x }}
+            className="fixed z-50 w-[200px] bg-[#222220] border border-white/[0.14] rounded-[4px] py-[4px] shadow-[0_10px_28px_rgba(0,0,0,0.72)] select-none"
+          >
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => chooseContextAction('edit')}
+              className="w-full px-[12px] py-[7px] flex items-center gap-[10px] text-left text-[12.5px] text-[#ededeb] hover:bg-white/[0.11] transition-colors cursor-pointer"
+            >
+              <Pencil className="w-[14px] h-[14px] text-[#c4c4c0] shrink-0" strokeWidth={1.8} />
+              <span>Ubah</span>
+            </button>
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => chooseContextAction('restock')}
+              className="w-full px-[12px] py-[7px] flex items-center gap-[10px] text-left text-[12.5px] text-[#ededeb] hover:bg-white/[0.11] transition-colors cursor-pointer"
+            >
+              <PackagePlus className="w-[14px] h-[14px] text-[#c4c4c0] shrink-0" strokeWidth={1.8} />
+              <span>Tambah stok</span>
+            </button>
+            <div className="my-[4px] border-t border-white/[0.09]" />
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => chooseContextAction('delete')}
+              className="w-full px-[12px] py-[7px] flex items-center gap-[10px] text-left text-[12.5px] text-[#ededeb] hover:bg-white/[0.11] transition-colors cursor-pointer"
+            >
+              <Trash2 className="w-[14px] h-[14px] text-[#c4c4c0] shrink-0" strokeWidth={1.8} />
+              <span>Hapus</span>
+            </button>
+          </div>
+        </>
+      )}
+
+      {selectedItem && (
+        <div
+          className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={closeProductActions}
+        >
+          <div
+            className="w-full max-w-[440px] bg-[#181817] border border-white/[0.12] rounded-[22px] p-[22px] shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start justify-between gap-3 mb-[16px]">
+              <div className="min-w-0">
+                <span className="text-[11.5px] font-medium text-[#848480] tabular-nums">
+                  ID {selectedItem.id}
+                </span>
+                <h2 className="text-[17px] font-semibold text-[#f3f3f1] tracking-[-0.02em] leading-[1.3] mt-0.5 truncate">
+                  {selectedItem.name}
+                </h2>
+                <div className="text-[12px] text-[#8e8e8a] mt-1 tabular-nums">
+                  {formatRupiah(selectedItem.sellPrice)} · Stok {selectedItem.stock}
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={closeProductActions}
+                aria-label="Tutup dialog"
+                className="w-[32px] h-[32px] rounded-full bg-[#242422] hover:bg-[#2e2e2b] text-[#b4b4b0] hover:text-white flex items-center justify-center transition-colors cursor-pointer shrink-0"
+              >
+                <X className="w-[15px] h-[15px]" />
+              </button>
+            </div>
+
+            {actionMode === 'edit' && (
+              <form onSubmit={handleSaveEdit} className="space-y-[14px]">
+                <div>
+                  <label className="block text-[12px] font-medium text-[#b4b4b0] mb-[6px]">
+                    Nama produk
+                  </label>
+                  <input
+                    type="text"
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    autoFocus
+                    className="w-full h-[40px] rounded-[12px] bg-[#1e1e1c] border border-white/[0.1] px-[13px] text-[13px] text-[#f2f2f0] placeholder-[#686864] focus:outline-none focus:border-white/[0.28]"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-[12px]">
+                  <div>
+                    <label className="block text-[12px] font-medium text-[#b4b4b0] mb-[6px]">
+                      Harga jual (Rp)
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="any"
+                      value={editSellPrice}
+                      onChange={(e) => setEditSellPrice(e.target.value)}
+                      className="w-full h-[40px] rounded-[12px] bg-[#1e1e1c] border border-white/[0.1] px-[13px] text-[13px] text-[#f2f2f0] tabular-nums focus:outline-none focus:border-white/[0.28]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[12px] font-medium text-[#b4b4b0] mb-[6px]">
+                      Stok
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="1"
+                      value={editStock}
+                      onChange={(e) => setEditStock(e.target.value)}
+                      className="w-full h-[40px] rounded-[12px] bg-[#1e1e1c] border border-white/[0.1] px-[13px] text-[13px] text-[#f2f2f0] tabular-nums focus:outline-none focus:border-white/[0.28]"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[12px] font-medium text-[#b4b4b0] mb-[6px]">
+                    Harga modal (Rp)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="any"
+                    value={editCostPrice}
+                    onChange={(e) => setEditCostPrice(e.target.value)}
+                    className="w-full h-[40px] rounded-[12px] bg-[#1e1e1c] border border-white/[0.1] px-[13px] text-[13px] text-[#f2f2f0] tabular-nums focus:outline-none focus:border-white/[0.28]"
+                  />
+                </div>
+
+                {actionError && (
+                  <div className="rounded-[10px] bg-white/[0.05] border border-white/[0.12] px-[12px] py-[8px] text-[12px] text-[#f2f2f0]">
+                    {actionError}
+                  </div>
+                )}
+
+                <div className="pt-[6px] flex items-center justify-end gap-[10px]">
+                  <button
+                    type="button"
+                    onClick={closeProductActions}
+                    className="h-[40px] px-[18px] rounded-full bg-[#242422] hover:bg-[#2e2e2b] text-[#e5e5e2] text-[12.5px] font-medium transition-colors cursor-pointer"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    type="submit"
+                    className="h-[40px] px-[20px] rounded-full bg-[#ededeb] hover:bg-white text-[#141414] text-[12.5px] font-semibold transition-colors cursor-pointer"
+                  >
+                    Simpan perubahan
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {actionMode === 'restock' && (
+              <form onSubmit={handleConfirmRestock} className="space-y-[14px]">
+                <div className="rounded-[14px] bg-[#1e1e1c] border border-white/[0.08] px-[14px] py-[12px] flex items-center justify-between">
+                  <span className="text-[12px] text-[#9e9e9a]">Stok saat ini</span>
+                  <span className="text-[15px] font-semibold text-[#f3f3f1] tabular-nums">
+                    {selectedItem.stock}
+                  </span>
+                </div>
+
+                <div>
+                  <label className="block text-[12px] font-medium text-[#b4b4b0] mb-[6px]">
+                    Jumlah tambahan stok
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    step="1"
+                    value={restockAmount}
+                    onChange={(e) => setRestockAmount(e.target.value)}
+                    placeholder="Masukkan jumlah"
+                    autoFocus
+                    className="w-full h-[40px] rounded-[12px] bg-[#1e1e1c] border border-white/[0.1] px-[13px] text-[13px] text-[#f2f2f0] placeholder-[#686864] tabular-nums focus:outline-none focus:border-white/[0.28]"
+                  />
+                  <div className="flex flex-wrap items-center gap-[8px] mt-[10px]">
+                    {[5, 10, 25, 50].map((preset) => (
+                      <button
+                        key={preset}
+                        type="button"
+                        onClick={() =>
+                          setRestockAmount((prev) => String((Number(prev) || 0) + preset))
+                        }
+                        className="h-[30px] px-[12px] rounded-full bg-[#242422] hover:bg-[#2f2f2c] border border-white/[0.08] text-[12px] font-medium text-[#e5e5e2] tabular-nums transition-colors cursor-pointer"
+                      >
+                        +{preset}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {Number(restockAmount) > 0 && Number.isInteger(Number(restockAmount)) && (
+                  <div className="rounded-[12px] border border-dashed border-white/[0.14] px-[14px] py-[10px] flex items-center justify-between text-[12.5px]">
+                    <span className="text-[#9e9e9a]">Stok setelah ditambah</span>
+                    <span className="font-semibold text-[#f3f3f1] tabular-nums">
+                      {selectedItem.stock + Number(restockAmount)}
+                    </span>
+                  </div>
+                )}
+
+                {actionError && (
+                  <div className="rounded-[10px] bg-white/[0.05] border border-white/[0.12] px-[12px] py-[8px] text-[12px] text-[#f2f2f0]">
+                    {actionError}
+                  </div>
+                )}
+
+                <div className="pt-[6px] flex items-center justify-end gap-[10px]">
+                  <button
+                    type="button"
+                    onClick={closeProductActions}
+                    className="h-[40px] px-[18px] rounded-full bg-[#242422] hover:bg-[#2e2e2b] text-[#e5e5e2] text-[12.5px] font-medium transition-colors cursor-pointer"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    type="submit"
+                    className="h-[40px] px-[20px] rounded-full bg-[#ededeb] hover:bg-white text-[#141414] text-[12.5px] font-semibold transition-colors cursor-pointer"
+                  >
+                    Tambah stok
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {actionMode === 'delete' && (
+              <div className="space-y-[16px]">
+                <div className="rounded-[14px] bg-[#1e1e1c] border border-white/[0.08] p-[14px] text-[13px] text-[#d4d4d0] leading-[1.5]">
+                  Apakah Anda yakin ingin menghapus produk{' '}
+                  <span className="font-semibold text-[#f3f3f1]">{selectedItem.name}</span>?
+                  Tindakan ini akan menghapus produk dari daftar stok saat ini.
+                </div>
+
+                <div className="flex items-center justify-end gap-[10px]">
+                  <button
+                    type="button"
+                    onClick={closeProductActions}
+                    className="h-[40px] px-[18px] rounded-full bg-[#242422] hover:bg-[#2e2e2b] text-[#e5e5e2] text-[12.5px] font-medium transition-colors cursor-pointer"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleConfirmDelete}
+                    className="h-[40px] px-[20px] rounded-full bg-[#ededeb] hover:bg-white text-[#141414] text-[12.5px] font-semibold transition-colors cursor-pointer"
+                  >
+                    Hapus produk
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </main>
   );
 };

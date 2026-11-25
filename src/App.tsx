@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
-import { BarChart2, Download } from 'lucide-react';
+import { BarChart2 } from 'lucide-react';
 import {
   PERIOD_DATA,
   PeriodFilter,
   RevenueRange,
   NavTab,
-  exportDashboardCsv,
 } from './data/dashboardData';
 import { SidebarNav } from './components/SidebarNav';
 import { TopSectionBar } from './components/TopSectionBar';
@@ -74,24 +73,15 @@ export default function App() {
                 })}
               </div>
 
-              {/* Right Buttons */}
-              <div className="flex items-center gap-[9px] shrink-0">
+              {/* Right Action Button: Analisis lengkap (White Primary CTA) */}
+              <div className="flex items-center shrink-0">
                 <button
                   type="button"
                   onClick={() => setActiveTab('Analisis')}
-                  className="inline-flex items-center gap-[7px] rounded-full bg-[#21211f] border border-white/[0.07] px-[15px] py-[7px] text-[12px] font-medium text-[#e5e5e2] hover:border-white/[0.15] hover:text-white transition-colors cursor-pointer whitespace-nowrap"
+                  className="inline-flex items-center gap-[7px] rounded-full bg-[#ededeb] px-[15px] py-[7px] text-[12px] font-semibold text-[#141414] hover:bg-white transition-colors cursor-pointer whitespace-nowrap"
                 >
-                  <BarChart2 className="w-[13.5px] h-[13.5px] shrink-0" strokeWidth={1.8} />
+                  <BarChart2 className="w-[13.5px] h-[13.5px] shrink-0" strokeWidth={2} />
                   <span>Analisis lengkap</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => exportDashboardCsv(period, revenueRange)}
-                  className="inline-flex items-center gap-[6px] rounded-full bg-[#ededeb] px-[15px] py-[7px] text-[12px] font-semibold text-[#141414] hover:bg-white transition-colors cursor-pointer whitespace-nowrap"
-                >
-                  <Download className="w-[13px] h-[13px] shrink-0" strokeWidth={2} />
-                  <span>Ekspor</span>
                 </button>
               </div>
             </div>
