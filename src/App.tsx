@@ -13,6 +13,7 @@ import { KpiCards } from './components/KpiCards';
 import { RevenueChartCard } from './components/RevenueChartCard';
 import { VisitsByTimeCard } from './components/VisitsByTimeCard';
 import { TotalVisitsCard } from './components/TotalVisitsCard';
+import { KasirView } from './components/KasirView';
 import { SecondaryView } from './components/SecondaryView';
 
 const PERIOD_FILTERS: PeriodFilter[] = ['Hari Ini', '7 Hari', '30 Hari'];
@@ -117,6 +118,8 @@ export default function App() {
               </div>
             </div>
           </main>
+        ) : activeTab === 'Kasir' ? (
+          <KasirView />
         ) : (
           <SecondaryView
             tab={activeTab}

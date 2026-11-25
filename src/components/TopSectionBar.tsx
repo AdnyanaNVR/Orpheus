@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { Search, Calendar, Bell, ChevronDown } from 'lucide-react';
+import { Calendar, Bell, ChevronDown } from 'lucide-react';
 import { NavTab } from '../data/dashboardData';
 
 interface TopSectionBarProps {
@@ -9,8 +9,7 @@ interface TopSectionBarProps {
 export const TopSectionBar: React.FC<TopSectionBarProps> = ({
   onNavigate,
 }) => {
-  const [openMenu, setOpenMenu] = useState<'search' | 'notif' | 'profile' | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [openMenu, setOpenMenu] = useState<'notif' | 'profile' | null>(null);
   const barRef = useRef<HTMLDivElement>(null);
 
   const formattedDate = useMemo(() => {
@@ -29,10 +28,7 @@ export const TopSectionBar: React.FC<TopSectionBarProps> = ({
       }
     };
     const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
-        e.preventDefault();
-        setOpenMenu((prev) => (prev === 'search' ? null : 'search'));
-      } else if (e.key === 'Escape') {
+      if (e.key === 'Escape') {
         setOpenMenu(null);
       }
     };
@@ -44,7 +40,7 @@ export const TopSectionBar: React.FC<TopSectionBarProps> = ({
     };
   }, []);
 
-  const toggleMenu = (menu: 'search' | 'notif' | 'profile') => {
+  const toggleMenu = (menu: 'notif' | 'profile') => {
     setOpenMenu((prev) => (prev === menu ? null : menu));
   };
 
@@ -53,8 +49,8 @@ export const TopSectionBar: React.FC<TopSectionBarProps> = ({
       ref={barRef}
       className="fixed top-[16px] left-[88px] sm:left-[116px] right-[16px] sm:right-[28px] z-[100] rounded-full bg-[#171716]/95 backdrop-blur-md border border-white/[0.08] px-[16px] py-[11px] flex items-center justify-between gap-[16px] shadow-[0_14px_40px_rgba(0,0,0,0.65)]"
     >
-      {/* Left: Monochrome Brand Circle + Orpheus + Compact Search Pill */}
-      <div className="flex items-center gap-[14px] min-w-0">
+      {/* Left: Monochrome Brand Circle + Orpheus */}
+      <div className="flex items-center min-w-0">
         <button
           type="button"
           onClick={() => {
@@ -76,66 +72,6 @@ export const TopSectionBar: React.FC<TopSectionBarProps> = ({
             </div>
           </div>
         </button>
-
-        {/* Compact High-Contrast White Search Pill with Dark Accents beside Orpheus */}
-        <div className="relative">
-          <button
-            type="button"
-            onClick={() => toggleMenu('search')}
-            className="h-[40px] w-[155px] sm:w-[205px] rounded-full bg-[#ededeb] hover:bg-white border-[1.5px] border-[#2a2a28] pl-[14px] pr-[7px] flex items-center justify-between text-[#141414] transition-colors cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.6),0_2px_8px_rgba(0,0,0,0.35)]"
-          >
-            <span className="flex items-center gap-[8px] text-[12px] font-medium text-[#141414] whitespace-nowrap">
-              <Search className="w-[14px] h-[14px] text-[#141414] shrink-0" strokeWidth={1.9} />
-              <span>Cari</span>
-            </span>
-            <span className="rounded-full bg-[#1a1a18] border border-[#2f2f2c] px-[8px] py-[4px] text-[10px] font-semibold text-[#f2f2f0] leading-none whitespace-nowrap shrink-0">
-              ⌘K
-            </span>
-          </button>
-
-          {/* Popover: Search */}
-          {openMenu === 'search' && (
-            <div className="absolute left-0 top-[54px] z-50 w-[290px] rounded-[16px] bg-[#20201e] border border-white/[0.12] p-3.5 shadow-2xl">
-              <input
-                type="text"
-                autoFocus
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Cari transaksi, SKU, atau kasir..."
-                className="w-full rounded-lg bg-[#ededeb] border-[1.5px] border-[#2a2a28] px-3 py-2 text-[12px] font-medium text-[#141414] placeholder-[#686864] focus:outline-none focus:bg-white"
-              />
-              <div className="mt-2.5 space-y-1 text-[11px] text-[#8e8e8a]">
-                {searchQuery ? (
-                  <div className="text-[#d4d4d0]">Hasil cepat untuk &ldquo;{searchQuery}&rdquo;</div>
-                ) : (
-                  <>
-                    <div className="text-[#a0a09c] font-medium mb-1">Pintasan Cepat</div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        onNavigate('Kasir');
-                        setOpenMenu(null);
-                      }}
-                      className="block w-full text-left px-2 py-1 rounded hover:bg-white/[0.05] text-[#d4d4d0] cursor-pointer"
-                    >
-                      Buka Terminal Kasir
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        onNavigate('Transaksi');
-                        setOpenMenu(null);
-                      }}
-                      className="block w-full text-left px-2 py-1 rounded hover:bg-white/[0.05] text-[#d4d4d0] cursor-pointer"
-                    >
-                      Lihat Riwayat Transaksi
-                    </button>
-                  </>
-                )}
-              </div>
-            </div>
-          )}
-        </div>
       </div>
 
       {/* Right: Date Pill + Notification + Profile */}

@@ -2,23 +2,14 @@ import React from 'react';
 import { NavTab } from '../data/dashboardData';
 
 interface SecondaryViewProps {
-  tab: Exclude<NavTab, 'Dasbor'>;
+  tab: Exclude<NavTab, 'Dasbor' | 'Kasir'>;
   onBackToDashboard: () => void;
 }
 
 const VIEW_CONTENT: Record<
-  Exclude<NavTab, 'Dasbor'>,
+  Exclude<NavTab, 'Dasbor' | 'Kasir'>,
   { subtitle: string; rows: { col1: string; col2: string; col3: string; badge: string }[] }
 > = {
-  Kasir: {
-    subtitle: 'Terminal Point of Sales Orpheus aktif untuk transaksi langsung di meja kasir.',
-    rows: [
-      { col1: 'Struk Aktif #POS-108', col2: '3 item • Pelanggan Umum', col3: 'Rp3.720.000', badge: 'Siap bayar' },
-      { col1: 'Braket Orpheus Kokoh — Hitam Doff', col2: 'SKU-1042 • 2 unit', col3: 'Rp510.000', badge: 'Dipindai' },
-      { col1: 'Pin Rak Kuningan Giling (Isi 20)', col2: 'SKU-2088 • 4 pak', col3: 'Rp1.800.000', badge: 'Dipindai' },
-      { col1: 'Transaksi #4893 — Harbor Millwork', col2: 'Kasir 1 • Pembayaran QRIS lunas', col3: 'Rp10.200.000', badge: 'Selesai' },
-    ],
-  },
   Produk: {
     subtitle: '3.842 unit terjual sepanjang bulan ini pada katalog perangkat keras Orpheus.',
     rows: [
