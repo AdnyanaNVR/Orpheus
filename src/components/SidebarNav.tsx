@@ -4,7 +4,6 @@ import {
   Calculator,
   Package,
   ReceiptText,
-  BarChart2,
   Settings,
 } from 'lucide-react';
 import { NavTab } from '../data/dashboardData';
@@ -23,7 +22,6 @@ const SIDEBAR_ITEMS: {
   { id: 'Kasir', label: 'Kasir', icon: Calculator },
   { id: 'Produk', label: 'Produk', icon: Package },
   { id: 'Transaksi', label: 'Transaksi', icon: ReceiptText },
-  { id: 'Analisis', label: 'Analisis', icon: BarChart2 },
   { id: 'Pengaturan', label: 'Pengaturan', icon: Settings },
 ];
 

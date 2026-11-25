@@ -10,15 +10,6 @@ const VIEW_CONTENT: Record<
   Exclude<NavTab, 'Dasbor' | 'Kasir' | 'Produk' | 'Transaksi'>,
   { subtitle: string; rows: { col1: string; col2: string; col3: string; badge: string }[] }
 > = {
-  Analisis: {
-    subtitle: 'Rincian lengkap alur transaksi kasir dan performa metode pembayaran November 2026.',
-    rows: [
-      { col1: 'Pemindaian Barang -> Subtotal Struk', col2: '214.860 struk diproses', col3: '98,4%', badge: '+1,2 poin' },
-      { col1: 'Pembayaran QRIS Instan', col2: '162.400 transaksi', col3: '75,6%', badge: '+3,4 poin' },
-      { col1: 'Pembayaran Kartu Debit/Kredit', col2: '41.440 transaksi', col3: '19,3%', badge: '+0,6 poin' },
-      { col1: 'Pembayaran Tunai di Kasir', col2: '11.020 transaksi', col3: '5,1%', badge: '-0,8 poin' },
-    ],
-  },
   Pengaturan: {
     subtitle: 'Konfigurasi ruang kerja, mata uang, perangkat kasir, dan preferensi Orpheus.',
     rows: [

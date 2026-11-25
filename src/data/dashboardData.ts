@@ -3,7 +3,6 @@ export type NavTab =
   | 'Kasir'
   | 'Produk'
   | 'Transaksi'
-  | 'Analisis'
   | 'Pengaturan';
 
 export type PeriodFilter = 'Hari Ini' | '7 Hari' | '30 Hari';

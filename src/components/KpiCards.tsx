@@ -96,10 +96,10 @@ export const KpiCards: React.FC<KpiCardsProps> = ({ data, onNavigate }) => {
         <div className="pt-[10px] border-t border-dashed border-black/[0.18]">
           <button
             type="button"
-            onClick={() => onNavigate('Analisis')}
+            onClick={() => onNavigate('Transaksi')}
             className="w-fit text-[11.5px] font-medium text-[#222220] underline underline-offset-[4px] decoration-[#6e6e6a] hover:text-black cursor-pointer whitespace-nowrap"
           >
-            Lihat analisis
+            Lihat transaksi
           </button>
         </div>
       </div>

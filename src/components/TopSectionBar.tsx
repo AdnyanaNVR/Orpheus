@@ -129,10 +129,10 @@ export const TopSectionBar: React.FC<TopSectionBarProps> = ({
             className="h-[44px] rounded-full bg-[#1e1e1c] border border-white/[0.06] pl-[5px] pr-[14px] flex items-center gap-[10px] hover:border-white/[0.15] transition-colors cursor-pointer"
           >
             <span className="w-[34px] h-[34px] rounded-full bg-[#d6d6d2] text-[#141414] text-[11.5px] font-semibold flex items-center justify-center shrink-0">
-              MR
+              OS
             </span>
             <div className="text-left leading-tight whitespace-nowrap">
-              <div className="text-[12px] font-semibold text-[#f2f2f0]">Maya Ross</div>
+              <div className="text-[12px] font-semibold text-[#f2f2f0]">Orpheus Shop</div>
             </div>
             <ChevronDown className="w-[14px] h-[14px] text-[#888884] ml-[2px] shrink-0" strokeWidth={1.8} />
           </button>
@@ -140,11 +140,11 @@ export const TopSectionBar: React.FC<TopSectionBarProps> = ({
           {/* Popover: Profile */}
           {openMenu === 'profile' && (
             <div className="absolute right-0 top-[54px] z-50 w-[215px] rounded-[16px] bg-[#20201e] border border-white/[0.09] p-3.5 shadow-2xl">
-              <div className="text-[12.5px] font-semibold text-[#f2f2f0]">Maya Ross</div>
-              <div className="text-[11px] text-[#888884] mb-2.5">maya@orpheus.co</div>
+              <div className="text-[12.5px] font-semibold text-[#f2f2f0]">Orpheus Shop</div>
+              <div className="text-[11px] text-[#888884] mb-2.5">toko@orpheus.co</div>
               <div className="border-t border-white/[0.07] pt-2 text-[11.5px] text-[#888884] space-y-1">
                 <div>Ruang Kerja: Orpheus</div>
-                <div>Peran: Manajer Kasir</div>
+                <div>Peran: Akun Toko</div>
               </div>
             </div>
           )}

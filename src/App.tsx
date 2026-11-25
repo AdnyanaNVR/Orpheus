@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { BarChart2 } from 'lucide-react';
 import {
   PERIOD_DATA,
   PeriodFilter,
@@ -72,18 +71,6 @@ export default function App() {
                     </button>
                   );
                 })}
-              </div>
-
-              {/* Right Action Button: Analisis lengkap (White Primary CTA) */}
-              <div className="flex items-center shrink-0">
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('Analisis')}
-                  className="inline-flex items-center gap-[7px] rounded-full bg-[#ededeb] px-[15px] py-[7px] text-[12px] font-semibold text-[#141414] hover:bg-white transition-colors cursor-pointer whitespace-nowrap"
-                >
-                  <BarChart2 className="w-[13.5px] h-[13.5px] shrink-0" strokeWidth={2} />
-                  <span>Analisis lengkap</span>
-                </button>
               </div>
             </div>
 
