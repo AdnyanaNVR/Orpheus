@@ -19,9 +19,82 @@
     font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
   }
 }
 
 .tabular-nums {
   font-variant-numeric: tabular-nums;
 }
+
+@keyframes qris-scan {
+  0%,
+  100% {
+    transform: translateY(6px);
+    opacity: 0.45;
+  }
+  50% {
+    transform: translateY(108px);
+    opacity: 1;
+  }
+}
+
+@keyframes card-wave {
+  0% {
+    transform: scale(0.82);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(1.45);
+    opacity: 0;
+  }
+}
+
+@keyframes confirm-pop {
+  0% {
+    transform: scale(0.65);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.06);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-qris-scan {
+  animation: qris-scan 1.5s ease-in-out infinite;
+}
+
+.animate-card-wave {
+  animation: card-wave 1.3s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+
+.animate-card-wave-delayed {
+  animation: card-wave 1.3s cubic-bezier(0.16, 1, 0.3, 1) 0.45s infinite;
+}
+
+.animate-confirm-pop {
+  animation: confirm-pop 0.38s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-qris-scan,
+  .animate-card-wave,
+  .animate-card-wave-delayed,
+  .animate-confirm-pop {
+    animation: none;
+  }
+}
+

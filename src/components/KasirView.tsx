@@ -1,9 +1,8 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Search,
   Plus,
   Trash2,
-  UserPlus,
   ScanBarcode,
   CreditCard,
   Minus,
@@ -14,11 +13,10 @@ import {
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
+  Wifi,
 } from 'lucide-react';
 import {
   INITIAL_KASIR_PRODUCTS,
-  KASIR_CUSTOMERS,
-  KasirCustomer,
   KasirProduct,
   formatRupiah,
 } from '../data/kasirData';
@@ -30,8 +28,8 @@ interface CartItem {
   quantity: number;
 }
 
-type DiscountOption = 'none' | '10' | '15';
-type PaymentMethod = 'Kartu' | 'Tunai' | 'QRIS';
+type PaymentMethod = 'Kartu' | 'QRIS' | 'Tunai';
+type PaymentModalPhase = 'processing' | 'cash_input' | 'success';
 
 type SortField = 'name' | 'price';
 type SortDirection = 'asc' | 'desc';
@@ -44,20 +42,34 @@ export const KasirView: React.FC = () => {
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortDir, setSortDir] = useState<SortDirection>('asc');
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [selectedCustomer, setSelectedCustomer] = useState<KasirCustomer | null>(null);
-  const [discount, setDiscount] = useState<DiscountOption>('none');
+  const [discountInput, setDiscountInput] = useState('');
+  const [appliedDiscountPercent, setAppliedDiscountPercent] = useState(0);
 
   // Overlays / interactive panels
-  const [showCustomerPicker, setShowCustomerPicker] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('Kartu');
+  const [paymentPhase, setPaymentPhase] = useState<PaymentModalPhase>('processing');
   const [cashReceived, setCashReceived] = useState('');
-  const [completedReceipt, setCompletedReceipt] = useState<{
+  const [successSnapshot, setSuccessSnapshot] = useState<{
     receiptNo: string;
     total: number;
     method: PaymentMethod;
+    paidCash: number;
     change: number;
   } | null>(null);
+
+  const processingTimerRef = useRef<number | null>(null);
+
+  const clearProcessingTimer = () => {
+    if (processingTimerRef.current !== null) {
+      window.clearTimeout(processingTimerRef.current);
+      processingTimerRef.current = null;
+    }
+  };
+
+  useEffect(() => {
+    return () => clearProcessingTimer();
+  }, []);
 
   const handleSortClick = (field: 'name' | 'price') => {
     if (sortField === field) {
@@ -129,8 +141,16 @@ export const KasirView: React.FC = () => {
 
   const handleClearCart = () => {
     setCart([]);
-    setSelectedCustomer(null);
-    setDiscount('none');
+    setDiscountInput('');
+    setAppliedDiscountPercent(0);
+  };
+
+  const handleApplyDiscount = (e: React.FormEvent) => {
+    e.preventDefault();
+    const numeric = Number(discountInput);
+    const clamped = Number.isFinite(numeric) ? Math.max(0, Math.min(100, numeric)) : 0;
+    setAppliedDiscountPercent(clamped);
+    setDiscountInput(clamped > 0 ? String(clamped) : '');
   };
 
   const totalItemsCount = useMemo(
@@ -143,7 +163,7 @@ export const KasirView: React.FC = () => {
     [cart]
   );
 
-  const discountRate = discount === '10' ? 0.1 : discount === '15' ? 0.15 : 0;
+  const discountRate = appliedDiscountPercent / 100;
   const discountAmount = Math.round(subtotal * discountRate);
   const discountedSubtotal = Math.max(0, subtotal - discountAmount);
   const taxAmount = Math.round(discountedSubtotal * TAX_RATE);
@@ -152,10 +172,7 @@ export const KasirView: React.FC = () => {
   const parsedCash = Number(cashReceived.replace(/[^\d]/g, '')) || 0;
   const cashChange = Math.max(0, parsedCash - total);
 
-  const handleCompletePayment = () => {
-    if (cart.length === 0) return;
-    if (paymentMethod === 'Tunai' && parsedCash < total) return;
-
+  const finalizeSale = (method: PaymentMethod, paidCashAmount = 0) => {
     setProducts((prev) =>
       prev.map((prod) => {
         const sold = cart.find((c) => c.id === prod.id);
@@ -165,66 +182,73 @@ export const KasirView: React.FC = () => {
     );
 
     const receiptNo = `#POS-${Math.floor(1000 + Math.random() * 9000)}`;
-    setCompletedReceipt({
+    setSuccessSnapshot({
       receiptNo,
       total,
-      method: paymentMethod,
-      change: paymentMethod === 'Tunai' ? cashChange : 0,
+      method,
+      paidCash: paidCashAmount,
+      change: method === 'Tunai' ? Math.max(0, paidCashAmount - total) : 0,
     });
-    setShowPaymentModal(false);
-    setCashReceived('');
+    setPaymentPhase('success');
     handleClearCart();
   };
 
+  const handleChargeClick = () => {
+    if (cart.length === 0) return;
+    clearProcessingTimer();
+    setSuccessSnapshot(null);
+    setShowPaymentModal(true);
+
+    if (paymentMethod === 'Tunai') {
+      setCashReceived('');
+      setPaymentPhase('cash_input');
+      return;
+    }
+
+    // Kartu or QRIS -> show animated processing visualization first, then confirm
+    setPaymentPhase('processing');
+    const activeMethod = paymentMethod;
+    processingTimerRef.current = window.setTimeout(() => {
+      processingTimerRef.current = null;
+      finalizeSale(activeMethod);
+    }, 1600);
+  };
+
+  const handleConfirmCashPayment = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (cart.length === 0 || parsedCash < total) return;
+    finalizeSale('Tunai', parsedCash);
+  };
+
+  const handleClosePaymentModal = () => {
+    clearProcessingTimer();
+    setShowPaymentModal(false);
+    setCashReceived('');
+  };
+
+  const quickCashSuggestions = useMemo(() => {
+    if (total <= 0) return [];
+    const roundUp50k = Math.ceil(total / 50000) * 50000;
+    const roundUp100k = Math.ceil(total / 100000) * 100000;
+    const set = new Set<number>([total, roundUp50k, roundUp100k, roundUp100k + 50000]);
+    return Array.from(set).sort((a, b) => a - b).slice(0, 3);
+  }, [total]);
+
   return (
-    <main>
+    <main className="lg:h-[calc(100vh-122px)] flex flex-col">
       {/* Clean Kasir Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between shrink-0">
         <h1 className="text-[40px] font-semibold text-[#f3f3f1] tracking-[-0.03em] leading-[1.05]">
           Kasir
         </h1>
       </div>
 
-      {/* Receipt Confirmation Banner */}
-      {completedReceipt && (
-        <div className="mt-[14px] rounded-[16px] bg-[#1e1e1c] border border-white/[0.12] px-[18px] py-[12px] flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-[30px] h-[30px] rounded-full bg-[#ededeb] text-[#141414] flex items-center justify-center shrink-0">
-              <Check className="w-[15px] h-[15px]" strokeWidth={2.4} />
-            </div>
-            <div className="text-[12.5px] text-[#f2f2f0]">
-              <span className="font-semibold">Transaksi {completedReceipt.receiptNo} selesai</span>
-              <span className="text-[#8e8e8a] mx-2">·</span>
-              <span className="tabular-nums">{formatRupiah(completedReceipt.total)}</span>
-              <span className="text-[#8e8e8a] mx-2">·</span>
-              <span className="text-[#c8c8c4]">{completedReceipt.method}</span>
-              {completedReceipt.change > 0 && (
-                <>
-                  <span className="text-[#8e8e8a] mx-2">·</span>
-                  <span className="text-[#c8c8c4] tabular-nums">
-                    Kembalian {formatRupiah(completedReceipt.change)}
-                  </span>
-                </>
-              )}
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={() => setCompletedReceipt(null)}
-            aria-label="Tutup notifikasi struk"
-            className="text-[#8e8e8a] hover:text-white transition-colors cursor-pointer"
-          >
-            <X className="w-[16px] h-[16px]" />
-          </button>
-        </div>
-      )}
-
-      {/* Two-Column Monochrome POS Workspace */}
-      <div className="grid grid-cols-12 gap-[16px] mt-[16px] items-stretch">
-        {/* Left: Search & Product Grid */}
-        <section className="col-span-12 lg:col-span-8 bg-[#171716] border border-white/[0.06] rounded-[20px] p-[18px] flex flex-col min-w-0">
+      {/* Two-Column Monochrome POS Workspace: Only Product Grid Scrolls on Desktop */}
+      <div className="grid grid-cols-12 gap-[16px] mt-[16px] flex-1 min-h-0 items-stretch">
+        {/* Left: Fixed Search/Sort Header + Independently Scrollable Product Grid */}
+        <section className="col-span-12 lg:col-span-8 bg-[#171716] border border-white/[0.06] rounded-[20px] p-[18px] flex flex-col min-w-0 min-h-0 overflow-hidden">
           {/* Search (Left, Compact) & Sort (Right End) */}
-          <div className="flex flex-wrap items-center justify-between gap-[10px]">
+          <div className="flex flex-wrap items-center justify-between gap-[10px] shrink-0">
             <div className="group relative w-full sm:w-[235px]">
               <Search
                 className="w-[14px] h-[14px] text-[#141414] group-focus-within:text-[#848480] absolute left-[13px] top-1/2 -translate-y-1/2 pointer-events-none transition-colors"
@@ -279,69 +303,71 @@ export const KasirView: React.FC = () => {
             </div>
           </div>
 
-          {/* Product Grid */}
-          {filteredProducts.length === 0 ? (
-            <div className="flex-1 min-h-[320px] flex flex-col items-center justify-center text-center py-12">
-              <div className="w-[46px] h-[46px] rounded-[13px] bg-[#222220] border border-white/[0.07] flex items-center justify-center text-[#848480] mb-3">
-                <Search className="w-[19px] h-[19px]" strokeWidth={1.7} />
+          {/* Independently Scrollable Product Grid Area */}
+          <div className="flex-1 min-h-0 overflow-y-auto mt-[14px] pr-[4px] [scrollbar-width:thin] [scrollbar-color:#333330_transparent]">
+            {filteredProducts.length === 0 ? (
+              <div className="h-full min-h-[260px] flex flex-col items-center justify-center text-center py-12">
+                <div className="w-[46px] h-[46px] rounded-[13px] bg-[#222220] border border-white/[0.07] flex items-center justify-center text-[#848480] mb-3">
+                  <Search className="w-[19px] h-[19px]" strokeWidth={1.7} />
+                </div>
+                <div className="text-[14px] font-medium text-[#f2f2f0]">Produk tidak ditemukan</div>
+                <p className="text-[12px] text-[#7c7c78] mt-1">
+                  Coba kata kunci pencarian lain.
+                </p>
               </div>
-              <div className="text-[14px] font-medium text-[#f2f2f0]">Produk tidak ditemukan</div>
-              <p className="text-[12px] text-[#7c7c78] mt-1">
-                Coba kata kunci pencarian lain.
-              </p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-[12px] mt-[14px]">
-              {filteredProducts.map((product) => {
-                const inCart = getCartQuantity(product.id);
-                const remaining = Math.max(0, product.stock - inCart);
-                const outOfStock = remaining <= 0;
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-[12px] pb-1">
+                {filteredProducts.map((product) => {
+                  const inCart = getCartQuantity(product.id);
+                  const remaining = Math.max(0, product.stock - inCart);
+                  const outOfStock = remaining <= 0;
 
-                return (
-                  <button
-                    key={product.id}
-                    type="button"
-                    disabled={outOfStock}
-                    onClick={() => addProductToCart(product)}
-                    className={`group rounded-[16px] border p-[15px] text-left flex flex-col justify-between transition-all min-h-[116px] ${
-                      outOfStock
-                        ? 'bg-[#181817] border-white/[0.04] opacity-50 cursor-not-allowed'
-                        : inCart > 0
-                        ? 'bg-[#222220] border-white/[0.22] hover:bg-[#272724] cursor-pointer'
-                        : 'bg-[#1c1c1a] border-white/[0.07] hover:bg-[#222220] hover:border-white/[0.15] cursor-pointer'
-                    }`}
-                  >
-                    <div className="flex items-start justify-between gap-2 w-full">
-                      <div className="text-[13px] font-semibold text-[#f3f3f1] leading-[1.35] line-clamp-2">
-                        {product.name}
+                  return (
+                    <button
+                      key={product.id}
+                      type="button"
+                      disabled={outOfStock}
+                      onClick={() => addProductToCart(product)}
+                      className={`group rounded-[16px] border p-[15px] text-left flex flex-col justify-between transition-all min-h-[116px] ${
+                        outOfStock
+                          ? 'bg-[#181817] border-white/[0.04] opacity-50 cursor-not-allowed'
+                          : inCart > 0
+                          ? 'bg-[#222220] border-white/[0.22] hover:bg-[#272724] cursor-pointer'
+                          : 'bg-[#1c1c1a] border-white/[0.07] hover:bg-[#222220] hover:border-white/[0.15] cursor-pointer'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-2 w-full">
+                        <div className="text-[13px] font-semibold text-[#f3f3f1] leading-[1.35] line-clamp-2">
+                          {product.name}
+                        </div>
+                        {inCart > 0 && (
+                          <span className="h-[22px] min-w-[22px] px-[6px] rounded-full bg-[#ededeb] text-[#141414] text-[11px] font-bold flex items-center justify-center tabular-nums shrink-0">
+                            {inCart}
+                          </span>
+                        )}
                       </div>
-                      {inCart > 0 && (
-                        <span className="h-[22px] min-w-[22px] px-[6px] rounded-full bg-[#ededeb] text-[#141414] text-[11px] font-bold flex items-center justify-center tabular-nums shrink-0">
-                          {inCart}
-                        </span>
-                      )}
-                    </div>
 
-                    <div className="w-full mt-[14px]">
-                      <div className="text-[13.5px] font-semibold text-[#ededeb] tabular-nums">
-                        {formatRupiah(product.price)}
+                      <div className="w-full mt-[14px]">
+                        <div className="text-[13.5px] font-semibold text-[#ededeb] tabular-nums">
+                          {formatRupiah(product.price)}
+                        </div>
+                        <div className="mt-[2px] text-[11.5px] text-[#7c7c78] tabular-nums">
+                          {remaining} tersisa
+                        </div>
                       </div>
-                      <div className="mt-[2px] text-[11.5px] text-[#7c7c78] tabular-nums">
-                        {remaining} tersisa
-                      </div>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          )}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </section>
 
-        {/* Right: Current Sale Cart & Payment Panel */}
-        <aside className="col-span-12 lg:col-span-4 bg-[#171716] border border-white/[0.06] rounded-[20px] flex flex-col justify-between overflow-hidden min-h-[540px]">
-          {/* Top Sale Header & Customer Attachment */}
+        {/* Right: Current Sale Cart & Payment Panel (Fixed within viewport) */}
+        <aside className="col-span-12 lg:col-span-4 bg-[#171716] border border-white/[0.06] rounded-[20px] flex flex-col justify-between overflow-hidden min-h-0">
+          {/* Top Sale Header */}
           <div className="p-[18px] pb-0 flex-1 flex flex-col min-h-0">
-            <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center justify-between gap-2 shrink-0">
               <div className="flex items-center gap-[9px]">
                 <h2 className="text-[15.5px] font-semibold text-[#f3f3f1] tracking-[-0.01em] whitespace-nowrap">
                   Transaksi saat ini
@@ -354,10 +380,10 @@ export const KasirView: React.FC = () => {
               <button
                 type="button"
                 onClick={handleClearCart}
-                disabled={cart.length === 0 && !selectedCustomer}
+                disabled={cart.length === 0}
                 title="Kosongkan transaksi"
                 className={`w-[32px] h-[32px] rounded-[9px] flex items-center justify-center transition-colors ${
-                  cart.length > 0 || selectedCustomer
+                  cart.length > 0
                     ? 'text-[#9e9e9a] hover:text-white hover:bg-white/[0.06] cursor-pointer'
                     : 'text-[#52524f] cursor-not-allowed'
                 }`}
@@ -366,63 +392,10 @@ export const KasirView: React.FC = () => {
               </button>
             </div>
 
-            {/* Attach a customer dashed button / picker */}
-            <div className="relative mt-[14px]">
-              {selectedCustomer ? (
-                <div className="h-[42px] rounded-[12px] bg-[#21211f] border border-white/[0.12] px-[13px] flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <UserPlus className="w-[14px] h-[14px] text-[#ededeb] shrink-0" strokeWidth={1.8} />
-                    <span className="text-[12.5px] font-medium text-[#f2f2f0] truncate">
-                      {selectedCustomer.name}
-                    </span>
-                    <span className="text-[11px] text-[#888884] whitespace-nowrap shrink-0">
-                      · {selectedCustomer.type}
-                    </span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedCustomer(null)}
-                    aria-label="Hapus pelanggan"
-                    className="text-[#888884] hover:text-white transition-colors cursor-pointer"
-                  >
-                    <X className="w-[14px] h-[14px]" />
-                  </button>
-                </div>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => setShowCustomerPicker((prev) => !prev)}
-                  className="w-full h-[42px] rounded-[12px] border border-dashed border-white/[0.15] hover:border-white/[0.3] hover:bg-white/[0.02] px-[14px] flex items-center justify-center gap-[8px] text-[12.5px] font-medium text-[#d4d4d0] transition-colors cursor-pointer whitespace-nowrap"
-                >
-                  <UserPlus className="w-[15px] h-[15px] text-[#9e9e9a]" strokeWidth={1.8} />
-                  <span>Kaitkan pelanggan</span>
-                </button>
-              )}
-
-              {showCustomerPicker && !selectedCustomer && (
-                <div className="absolute left-0 right-0 top-[48px] z-30 rounded-[14px] bg-[#21211f] border border-white/[0.12] p-2 shadow-2xl space-y-1">
-                  {KASIR_CUSTOMERS.map((cust) => (
-                    <button
-                      key={cust.id}
-                      type="button"
-                      onClick={() => {
-                        setSelectedCustomer(cust);
-                        setShowCustomerPicker(false);
-                      }}
-                      className="w-full rounded-[9px] px-3 py-2 text-left hover:bg-white/[0.06] transition-colors flex items-center justify-between cursor-pointer"
-                    >
-                      <span className="text-[12px] font-medium text-[#f2f2f0]">{cust.name}</span>
-                      <span className="text-[11px] text-[#888884]">{cust.type}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
             {/* Cart Items or Dashed Empty Scan Zone */}
             {cart.length === 0 ? (
-              <div className="flex-1 flex flex-col justify-center py-[16px]">
-                <div className="rounded-[16px] border border-dashed border-white/[0.14] min-h-[168px] flex flex-col items-center justify-center text-center px-4 py-8">
+              <div className="flex-1 flex flex-col justify-center py-[14px] min-h-0">
+                <div className="rounded-[16px] border border-dashed border-white/[0.14] h-full min-h-[140px] flex flex-col items-center justify-center text-center px-4 py-6">
                   <ScanBarcode className="w-[22px] h-[22px] text-[#7c7c78] mb-[10px]" strokeWidth={1.7} />
                   <p className="text-[13px] font-medium text-[#8e8e8a]">
                     Ketuk produk untuk mulai transaksi
@@ -430,7 +403,7 @@ export const KasirView: React.FC = () => {
                 </div>
               </div>
             ) : (
-              <div className="flex-1 overflow-y-auto py-[14px] space-y-[8px] max-h-[260px] pr-0.5">
+              <div className="flex-1 min-h-0 overflow-y-auto py-[12px] space-y-[8px] pr-[2px] [scrollbar-width:thin] [scrollbar-color:#333330_transparent]">
                 {cart.map((item) => (
                   <div
                     key={item.id}
@@ -479,10 +452,10 @@ export const KasirView: React.FC = () => {
           </div>
 
           {/* Bottom Summary, Payment Method Pills & Charge CTA */}
-          <div className="px-[18px] pb-[18px]">
-            <div className="border-t border-dashed border-white/[0.14] pt-[16px]">
+          <div className="px-[18px] pb-[18px] shrink-0">
+            <div className="border-t border-dashed border-white/[0.14] pt-[15px]">
               {/* Subtotal, Discount Pill, Tax */}
-              <div className="space-y-[11px] text-[12.5px]">
+              <div className="space-y-[10px] text-[12.5px]">
                 <div className="flex items-center justify-between">
                   <span className="text-[#9e9e9a]">Subtotal</span>
                   <span className="tabular-nums text-[#f2f2f0] font-semibold">
@@ -492,36 +465,33 @@ export const KasirView: React.FC = () => {
 
                 <div className="flex items-center justify-between gap-2">
                   <span className="text-[#9e9e9a]">Diskon</span>
-                  <div className="inline-flex items-center bg-[#232321] border border-white/[0.06] rounded-full p-[3px] gap-[2px]">
-                    {(
-                      [
-                        { id: 'none', label: 'Tanpa' },
-                        { id: '10', label: '10%' },
-                        { id: '15', label: '15%' },
-                      ] as const
-                    ).map((opt) => {
-                      const active = discount === opt.id;
-                      return (
-                        <button
-                          key={opt.id}
-                          type="button"
-                          onClick={() => setDiscount(opt.id)}
-                          className={`px-[12px] py-[4px] rounded-full text-[11.5px] transition-colors cursor-pointer whitespace-nowrap ${
-                            active
-                              ? 'bg-[#ededeb] text-[#141414] font-semibold'
-                              : 'text-[#a2a29d] hover:text-white font-medium'
-                          }`}
-                        >
-                          {opt.label}
-                        </button>
-                      );
-                    })}
-                  </div>
+                  <form onSubmit={handleApplyDiscount} className="inline-flex items-center gap-[6px]">
+                    <div className="w-[74px] h-[32px] rounded-full bg-[#222220] border border-white/[0.08] focus-within:border-white/[0.25] px-[11px] flex items-center gap-[3px] transition-colors">
+                      <input
+                        type="number"
+                        min={0}
+                        max={100}
+                        step="any"
+                        value={discountInput}
+                        onChange={(e) => setDiscountInput(e.target.value)}
+                        placeholder="0"
+                        aria-label="Persentase diskon"
+                        className="w-full bg-transparent text-right text-[12px] font-semibold text-[#f2f2f0] placeholder-[#686864] tabular-nums focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                      />
+                      <span className="text-[11.5px] text-[#8e8e8a] font-medium shrink-0">%</span>
+                    </div>
+                    <button
+                      type="submit"
+                      className="h-[32px] px-[13px] rounded-full bg-[#ededeb] hover:bg-white text-[#141414] text-[11.5px] font-semibold transition-colors cursor-pointer whitespace-nowrap shrink-0"
+                    >
+                      Konfirmasi
+                    </button>
+                  </form>
                 </div>
 
                 {discountAmount > 0 && (
                   <div className="flex items-center justify-between">
-                    <span className="text-[#9e9e9a]">Potongan ({Math.round(discountRate * 100)}%)</span>
+                    <span className="text-[#9e9e9a]">Potongan ({appliedDiscountPercent}%)</span>
                     <span className="tabular-nums text-[#d6d6d2] font-medium">
                       -{formatRupiah(discountAmount)}
                     </span>
@@ -537,20 +507,20 @@ export const KasirView: React.FC = () => {
               </div>
 
               {/* Grand Total */}
-              <div className="flex items-baseline justify-between mt-[14px]">
+              <div className="flex items-baseline justify-between mt-[13px]">
                 <span className="text-[14.5px] font-semibold text-[#f3f3f1]">Total</span>
                 <span className="text-[28px] font-bold text-[#f3f3f1] tabular-nums tracking-[-0.03em] leading-none">
                   {formatRupiah(total)}
                 </span>
               </div>
 
-              {/* Payment Method Segmented Pill */}
-              <div className="mt-[16px] w-full rounded-full bg-[#222220] border border-white/[0.06] p-[4px] grid grid-cols-3 gap-[4px]">
+              {/* Payment Method Segmented Pill (Tunai at far right) */}
+              <div className="mt-[15px] w-full rounded-full bg-[#222220] border border-white/[0.06] p-[4px] grid grid-cols-3 gap-[4px]">
                 {(
                   [
                     { id: 'Kartu', icon: CreditCard },
-                    { id: 'Tunai', icon: Banknote },
                     { id: 'QRIS', icon: QrCode },
+                    { id: 'Tunai', icon: Banknote },
                   ] as const
                 ).map(({ id, icon: Icon }) => {
                   const active = paymentMethod === id;
@@ -576,14 +546,7 @@ export const KasirView: React.FC = () => {
               <button
                 type="button"
                 disabled={cart.length === 0}
-                onClick={() => {
-                  if (paymentMethod === 'Tunai') {
-                    setCashReceived(String(total));
-                    setShowPaymentModal(true);
-                  } else {
-                    handleCompletePayment();
-                  }
-                }}
+                onClick={handleChargeClick}
                 className={`mt-[12px] w-full h-[46px] rounded-full inline-flex items-center justify-center text-[13.5px] font-semibold transition-all whitespace-nowrap ${
                   cart.length === 0
                     ? 'bg-[#2b2b29] text-[#7c7c78] cursor-not-allowed'
@@ -597,91 +560,198 @@ export const KasirView: React.FC = () => {
         </aside>
       </div>
 
-      {/* Modal: Checkout Payment */}
+      {/* Modal: Animated Payment Processing / Cash Input / Confirmation */}
       {showPaymentModal && (
-        <div className="fixed inset-0 z-[120] bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="w-full max-w-[420px] rounded-[20px] bg-[#1a1a18] border border-white/[0.1] p-[22px] shadow-2xl">
+        <div className="fixed inset-0 z-[120] bg-black/75 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="w-full max-w-[400px] rounded-[24px] bg-[#1a1a18] border border-white/[0.1] p-[24px] shadow-2xl">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h3 className="text-[17px] font-semibold text-[#f3f3f1]">Pembayaran Kasir</h3>
-                <p className="text-[12px] text-[#888884] mt-0.5 tabular-nums">
-                  {totalItemsCount} item{selectedCustomer ? ` · ${selectedCustomer.name}` : ''}
-                </p>
+                <h3 className="text-[16.5px] font-semibold text-[#f3f3f1]">
+                  {paymentPhase === 'success'
+                    ? 'Pembayaran Selesai'
+                    : paymentPhase === 'cash_input'
+                    ? 'Pembayaran Tunai'
+                    : `Pembayaran ${paymentMethod}`}
+                </h3>
+                {paymentPhase !== 'success' && (
+                  <p className="text-[12px] text-[#888884] mt-0.5 tabular-nums">
+                    {totalItemsCount} item
+                  </p>
+                )}
               </div>
               <button
                 type="button"
-                onClick={() => setShowPaymentModal(false)}
-                className="text-[#888884] hover:text-white cursor-pointer"
+                onClick={handleClosePaymentModal}
+                aria-label="Tutup jendela pembayaran"
+                className="w-[30px] h-[30px] rounded-full bg-white/[0.05] text-[#9e9e9a] hover:text-white flex items-center justify-center transition-colors cursor-pointer"
               >
-                <X className="w-[18px] h-[18px]" />
+                <X className="w-[16px] h-[16px]" />
               </button>
             </div>
 
-            <div className="rounded-[14px] bg-[#131312] border border-white/[0.07] p-4 flex items-center justify-between mb-4">
-              <span className="text-[12.5px] text-[#9e9e9a]">Total tagihan</span>
-              <span className="text-[22px] font-semibold text-[#f3f3f1] tabular-nums">
-                {formatRupiah(total)}
-              </span>
-            </div>
-
-            <div className="grid grid-cols-3 gap-2 mb-4">
-              {(
-                [
-                  { id: 'QRIS', icon: QrCode },
-                  { id: 'Kartu', icon: CreditCard },
-                  { id: 'Tunai', icon: Banknote },
-                ] as const
-              ).map(({ id, icon: Icon }) => {
-                const active = paymentMethod === id;
-                return (
-                  <button
-                    key={id}
-                    type="button"
-                    onClick={() => setPaymentMethod(id)}
-                    className={`h-[44px] rounded-[11px] border flex items-center justify-center gap-2 text-[12.5px] font-medium transition-colors cursor-pointer ${
-                      active
-                        ? 'bg-[#ededeb] border-[#ededeb] text-[#141414] font-semibold'
-                        : 'bg-[#21211f] border-white/[0.07] text-[#c8c8c4] hover:border-white/[0.18]'
-                    }`}
-                  >
-                    <Icon className="w-[15px] h-[15px]" strokeWidth={1.9} />
-                    <span>{id}</span>
-                  </button>
-                );
-              })}
-            </div>
-
-            {paymentMethod === 'Tunai' && (
-              <div className="mb-4 space-y-2">
-                <label className="block text-[11.5px] text-[#9e9e9a]">Uang diterima (Rp)</label>
-                <input
-                  type="number"
-                  min={0}
-                  value={cashReceived}
-                  onChange={(e) => setCashReceived(e.target.value)}
-                  className="w-full h-[42px] rounded-[10px] bg-[#121211] border border-white/[0.1] px-3 text-[13.5px] font-medium text-[#f2f2f0] tabular-nums focus:outline-none focus:border-white/[0.25]"
-                />
-                <div className="flex items-center justify-between text-[12px] text-[#9e9e9a] pt-1">
-                  <span>Kembalian</span>
-                  <span className="tabular-nums font-semibold text-[#ededeb]">
-                    {formatRupiah(cashChange)}
-                  </span>
+            {/* Phase 1A: Kartu NFC / Reader Animation */}
+            {paymentPhase === 'processing' && paymentMethod === 'Kartu' && (
+              <div className="py-5 flex flex-col items-center text-center">
+                <div className="relative w-[132px] h-[132px] flex items-center justify-center mb-5">
+                  <span className="absolute inset-0 rounded-full border border-white/[0.2] animate-card-wave" />
+                  <span className="absolute inset-[14px] rounded-full border border-white/[0.25] animate-card-wave-delayed" />
+                  <div className="relative w-[84px] h-[84px] rounded-[22px] bg-[#242422] border border-white/[0.14] flex flex-col items-center justify-center gap-1.5 shadow-xl">
+                    <Wifi className="w-[18px] h-[18px] text-[#ededeb] rotate-90" strokeWidth={2} />
+                    <CreditCard className="w-[26px] h-[26px] text-[#f3f3f1]" strokeWidth={1.7} />
+                  </div>
+                </div>
+                <div className="text-[14px] font-semibold text-[#f3f3f1]">
+                  Tempelkan atau gesek kartu
+                </div>
+                <p className="text-[12px] text-[#888884] mt-1">
+                  Memverifikasi transaksi kartu debit/kredit...
+                </p>
+                <div className="mt-4 rounded-full bg-[#131312] border border-white/[0.07] px-5 py-2 text-[15px] font-bold text-[#ededeb] tabular-nums">
+                  {formatRupiah(total)}
                 </div>
               </div>
             )}
 
-            <button
-              type="button"
-              disabled={paymentMethod === 'Tunai' && parsedCash < total}
-              onClick={handleCompletePayment}
-              className={`w-full h-[46px] rounded-[12px] text-[13.5px] font-semibold transition-colors ${
-                paymentMethod === 'Tunai' && parsedCash < total
-                  ? 'bg-[#2a2a28] text-[#848480] cursor-not-allowed'
-                  : 'bg-[#ededeb] hover:bg-white text-[#141414] cursor-pointer'
-              }`}
-            >
-              Selesaikan Pembayaran
-            </button>
+            {/* Phase 1B: QRIS Scan Beam Animation */}
+            {paymentPhase === 'processing' && paymentMethod === 'QRIS' && (
+              <div className="py-4 flex flex-col items-center text-center">
+                <div className="relative w-[148px] h-[148px] rounded-[20px] bg-[#131312] border border-white/[0.1] flex items-center justify-center overflow-hidden mb-5">
+                  {/* Corner scan brackets */}
+                  <span className="absolute top-3 left-3 w-4 h-4 border-t-2 border-l-2 border-[#ededeb] rounded-tl-[4px]" />
+                  <span className="absolute top-3 right-3 w-4 h-4 border-t-2 border-r-2 border-[#ededeb] rounded-tr-[4px]" />
+                  <span className="absolute bottom-3 left-3 w-4 h-4 border-b-2 border-l-2 border-[#ededeb] rounded-bl-[4px]" />
+                  <span className="absolute bottom-3 right-3 w-4 h-4 border-b-2 border-r-2 border-[#ededeb] rounded-br-[4px]" />
+
+                  <QrCode className="w-[78px] h-[78px] text-[#ededeb]" strokeWidth={1.4} />
+
+                  {/* Animated horizontal scan laser */}
+                  <div className="absolute left-4 right-4 top-[14px] h-[2px] rounded-full bg-white shadow-[0_0_10px_rgba(255,255,255,0.85)] animate-qris-scan" />
+                </div>
+
+                <div className="text-[14px] font-semibold text-[#f3f3f1]">
+                  Menunggu pemindaian QRIS
+                </div>
+                <p className="text-[12px] text-[#888884] mt-1">
+                  Memeriksa konfirmasi pembayaran instan...
+                </p>
+                <div className="mt-4 rounded-full bg-[#131312] border border-white/[0.07] px-5 py-2 text-[15px] font-bold text-[#ededeb] tabular-nums">
+                  {formatRupiah(total)}
+                </div>
+              </div>
+            )}
+
+            {/* Phase 2: Tunai Input Received Cash Before Confirmation Animation */}
+            {paymentPhase === 'cash_input' && (
+              <form onSubmit={handleConfirmCashPayment}>
+                <div className="rounded-[16px] bg-[#131312] border border-white/[0.07] p-4 flex items-center justify-between mb-4">
+                  <span className="text-[12.5px] text-[#9e9e9a]">Total tagihan</span>
+                  <span className="text-[22px] font-bold text-[#f3f3f1] tabular-nums">
+                    {formatRupiah(total)}
+                  </span>
+                </div>
+
+                <div className="space-y-2.5 mb-5">
+                  <label className="block text-[12px] font-medium text-[#b4b4b0]">
+                    Uang diterima (Rp)
+                  </label>
+                  <input
+                    type="number"
+                    min={0}
+                    required
+                    autoFocus
+                    value={cashReceived}
+                    onChange={(e) => setCashReceived(e.target.value)}
+                    placeholder={String(total)}
+                    className="w-full h-[44px] rounded-[12px] bg-[#121211] border border-white/[0.12] px-3.5 text-[15px] font-semibold text-[#f2f2f0] placeholder-[#5e5e5a] tabular-nums focus:outline-none focus:border-white/[0.3]"
+                  />
+
+                  <div className="flex items-center gap-2 pt-0.5">
+                    {quickCashSuggestions.map((amt) => (
+                      <button
+                        key={amt}
+                        type="button"
+                        onClick={() => setCashReceived(String(amt))}
+                        className="flex-1 h-[32px] rounded-full bg-[#242422] hover:bg-[#30302d] border border-white/[0.07] text-[11px] font-medium text-[#d6d6d2] tabular-nums transition-colors cursor-pointer whitespace-nowrap px-2"
+                      >
+                        {amt === total ? 'Uang Pas' : formatRupiah(amt)}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="flex items-center justify-between pt-2 border-t border-dashed border-white/[0.1] text-[13px]">
+                    <span className="text-[#9e9e9a]">Kembalian</span>
+                    <span
+                      className={`tabular-nums font-bold ${
+                        parsedCash >= total ? 'text-[#f3f3f1]' : 'text-[#6c6c68]'
+                      }`}
+                    >
+                      {parsedCash >= total ? formatRupiah(cashChange) : 'Belum cukup'}
+                    </span>
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={parsedCash < total}
+                  className={`w-full h-[46px] rounded-full text-[13.5px] font-semibold transition-colors ${
+                    parsedCash < total
+                      ? 'bg-[#2b2b29] text-[#7c7c78] cursor-not-allowed'
+                      : 'bg-[#ededeb] hover:bg-white text-[#141414] cursor-pointer'
+                  }`}
+                >
+                  Konfirmasi Pembayaran Tunai
+                </button>
+              </form>
+            )}
+
+            {/* Phase 3: Animated Confirmation Success */}
+            {paymentPhase === 'success' && successSnapshot && (
+              <div className="py-3 flex flex-col items-center text-center">
+                <div className="w-[72px] h-[72px] rounded-full bg-[#ededeb] text-[#141414] flex items-center justify-center mb-4 animate-confirm-pop shadow-[0_10px_30px_rgba(237,237,235,0.2)]">
+                  <Check className="w-[34px] h-[34px]" strokeWidth={2.5} />
+                </div>
+
+                <div className="text-[17px] font-semibold text-[#f3f3f1]">
+                  Pembayaran {successSnapshot.method} Berhasil
+                </div>
+                <p className="text-[12px] text-[#888884] mt-1 tabular-nums">
+                  Struk {successSnapshot.receiptNo}
+                </p>
+
+                <div className="w-full rounded-[16px] bg-[#131312] border border-white/[0.07] p-4 mt-5 space-y-2 text-[12.5px]">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[#8e8e8a]">Total dibayar</span>
+                    <span className="font-bold text-[#f3f3f1] tabular-nums">
+                      {formatRupiah(successSnapshot.total)}
+                    </span>
+                  </div>
+                  {successSnapshot.method === 'Tunai' && (
+                    <>
+                      <div className="flex items-center justify-between">
+                        <span className="text-[#8e8e8a]">Uang diterima</span>
+                        <span className="font-medium text-[#d6d6d2] tabular-nums">
+                          {formatRupiah(successSnapshot.paidCash)}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between pt-1.5 border-t border-dashed border-white/[0.1]">
+                        <span className="text-[#8e8e8a]">Kembalian</span>
+                        <span className="font-bold text-[#ededeb] tabular-nums">
+                          {formatRupiah(successSnapshot.change)}
+                        </span>
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleClosePaymentModal}
+                  className="mt-5 w-full h-[46px] rounded-full bg-[#ededeb] hover:bg-white text-[#141414] text-[13.5px] font-semibold transition-colors cursor-pointer"
+                >
+                  Selesai
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
