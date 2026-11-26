@@ -423,6 +423,14 @@ export interface StoreContext {
   memoryStore: MemoryStoreRecord | null;
 }
 
+function isPermissionDeniedError(error: { code?: string; message?: string } | null): boolean {
+  if (!error) return false;
+  return (
+    error.code === '42501' ||
+    (error.message ?? '').toLowerCase().includes('permission denied')
+  );
+}
+
 async function loadSupabaseStoreForUser(
   supabase: SupabaseClient,
   ownerId: string
@@ -435,6 +443,12 @@ async function loadSupabaseStoreForUser(
 
   if (error) {
     console.error('Supabase store lookup failed:', error.message);
+    if (isPermissionDeniedError(error)) {
+      throw new PosError(
+        500,
+        'Izin akses tabel Supabase belum aktif. Jalankan migrasi supabase/migrations/002_grant_authenticated_permissions.sql di Supabase SQL Editor.'
+      );
+    }
     throw new PosError(500, 'Gagal memuat data toko dari database.');
   }
 

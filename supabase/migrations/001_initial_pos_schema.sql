@@ -143,4 +143,24 @@ create policy "transaction_items_owner_all" on public.transaction_items
     )
   );
 
+-- 7. Pastikan hak akses tabel & sequence diberikan ke role authenticated (dan tidak ke anon)
+grant usage on schema public to anon, authenticated;
+
+revoke all on table
+  public.stores,
+  public.products,
+  public.transactions,
+  public.transaction_items
+from anon;
+
+grant select, insert, update, delete on table
+  public.stores,
+  public.products,
+  public.transactions,
+  public.transaction_items
+to authenticated;
+
+grant usage, select on all sequences in schema public to authenticated;
+
 commit;
+
