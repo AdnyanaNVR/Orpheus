@@ -3,7 +3,7 @@ import { AnimatedTitle } from './AnimatedTitle';
 
 interface PengaturanViewProps {
   storeName: string;
-  onSaveStoreName: (nextName: string) => void;
+  onSaveStoreName: (nextName: string) => Promise<void>;
 }
 
 export const PengaturanView: React.FC<PengaturanViewProps> = ({
@@ -13,6 +13,7 @@ export const PengaturanView: React.FC<PengaturanViewProps> = ({
   const [draftName, setDraftName] = useState(storeName);
   const [error, setError] = useState('');
   const [savedNotice, setSavedNotice] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     setDraftName(storeName);
@@ -27,17 +28,28 @@ export const PengaturanView: React.FC<PengaturanViewProps> = ({
   const trimmed = draftName.trim();
   const isDirty = trimmed !== storeName;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSaving) return;
     if (!trimmed) {
       setError('Nama toko tidak boleh kosong.');
       setSavedNotice(false);
       return;
     }
     setError('');
-    onSaveStoreName(trimmed);
-    setDraftName(trimmed);
-    setSavedNotice(true);
+    setIsSaving(true);
+    try {
+      await onSaveStoreName(trimmed);
+      setDraftName(trimmed);
+      setSavedNotice(true);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : 'Gagal menyimpan nama toko.'
+      );
+      setSavedNotice(false);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleCancel = () => {
@@ -72,13 +84,14 @@ export const PengaturanView: React.FC<PengaturanViewProps> = ({
               type="text"
               value={draftName}
               maxLength={40}
+              disabled={isSaving}
               onChange={(e) => {
                 setDraftName(e.target.value);
                 if (error) setError('');
                 if (savedNotice) setSavedNotice(false);
               }}
               placeholder="Masukkan nama toko"
-              className="mt-[10px] w-full rounded-[14px] bg-[#111110] border border-white/[0.1] px-[15px] py-[11px] text-[13.5px] text-[#f3f3f1] placeholder:text-[#666662] focus:border-white/[0.32] focus:outline-none transition-colors"
+              className="mt-[10px] w-full rounded-[14px] bg-[#111110] border border-white/[0.1] px-[15px] py-[11px] text-[13.5px] text-[#f3f3f1] placeholder:text-[#666662] focus:border-white/[0.32] focus:outline-none transition-colors disabled:opacity-60"
             />
             {error && (
               <p className="mt-[8px] text-[12px] text-[#e5e5e1]">{error}</p>
@@ -101,18 +114,19 @@ export const PengaturanView: React.FC<PengaturanViewProps> = ({
               {isDirty && (
                 <button
                   type="button"
+                  disabled={isSaving}
                   onClick={handleCancel}
-                  className="rounded-full bg-[#242422] hover:bg-[#2e2e2b] text-[#d4d4d0] px-[18px] py-[9px] text-[12.5px] font-medium transition-colors cursor-pointer whitespace-nowrap shrink-0"
+                  className="rounded-full bg-[#242422] hover:bg-[#2e2e2b] disabled:opacity-40 text-[#d4d4d0] px-[18px] py-[9px] text-[12.5px] font-medium transition-colors cursor-pointer whitespace-nowrap shrink-0"
                 >
                   Batal
                 </button>
               )}
               <button
                 type="submit"
-                disabled={!isDirty || !trimmed}
+                disabled={!isDirty || !trimmed || isSaving}
                 className="rounded-full bg-[#ededeb] text-[#141414] hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed px-[20px] py-[9px] text-[12.5px] font-semibold transition-colors cursor-pointer whitespace-nowrap shrink-0"
               >
-                Simpan
+                {isSaving ? 'Menyimpan...' : 'Simpan'}
               </button>
             </div>
           </div>

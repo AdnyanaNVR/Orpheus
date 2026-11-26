@@ -1,11 +1,15 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { Calendar, Bell, ChevronDown } from 'lucide-react';
+import { Calendar, Bell, ChevronDown, LogOut } from 'lucide-react';
 import { NavTab } from '../data/dashboardData';
+import type { NotificationItem } from '../types/pos';
 import { AnimatedNumber } from './AnimatedNumber';
 
 interface TopSectionBarProps {
   storeName: string;
+  userEmail?: string;
+  notifications: NotificationItem[];
   onNavigate: (tab: NavTab) => void;
+  onLogout?: () => void;
 }
 
 function getStoreInitials(name: string): string {
@@ -17,7 +21,10 @@ function getStoreInitials(name: string): string {
 
 export const TopSectionBar: React.FC<TopSectionBarProps> = ({
   storeName,
+  userEmail,
+  notifications,
   onNavigate,
+  onLogout,
 }) => {
   const storeInitials = getStoreInitials(storeName);
   const [openMenu, setOpenMenu] = useState<'notif' | 'profile' | null>(null);
@@ -103,7 +110,7 @@ export const TopSectionBar: React.FC<TopSectionBarProps> = ({
           >
             <Bell className="w-[16px] h-[16px]" strokeWidth={1.7} />
             <span className="absolute -top-[2px] -right-[2px] min-w-[18px] h-[18px] px-[4px] rounded-full bg-[#d6d6d2] border-[2px] border-[#171716] text-[9.5px] font-bold text-[#141414] flex items-center justify-center leading-none tabular-nums">
-              <AnimatedNumber value={3} duration={450} />
+              <AnimatedNumber value={notifications.length} duration={450} />
             </span>
           </button>
 
@@ -112,21 +119,23 @@ export const TopSectionBar: React.FC<TopSectionBarProps> = ({
             <div className="absolute right-0 top-[54px] z-50 w-[290px] rounded-[16px] bg-[#20201e] border border-white/[0.09] p-3.5 shadow-2xl animate-menu-pop">
               <div className="flex items-center justify-between mb-2.5">
                 <span className="text-[12.5px] font-semibold text-[#f2f2f0]">Notifikasi</span>
-                <span className="text-[11px] text-[#888884]">3 belum dibaca</span>
+                <span className="text-[11px] text-[#888884] tabular-nums">
+                  {notifications.length} terbaru
+                </span>
               </div>
               <div className="space-y-2 text-[11.5px]">
-                <div className="rounded-lg bg-[#282826] p-2.5">
-                  <div className="font-medium text-[#ededeb]">Transaksi #4894 lunas via QRIS</div>
-                  <div className="text-[#8e8e8a] mt-0.5">Kasir 1 • 4 menit lalu</div>
-                </div>
-                <div className="rounded-lg bg-[#282826] p-2.5">
-                  <div className="font-medium text-[#ededeb]">Stok SKU-2088 menipis</div>
-                  <div className="text-[#8e8e8a] mt-0.5">Pin Rak Kuningan • 25 menit lalu</div>
-                </div>
-                <div className="rounded-lg bg-[#282826] p-2.5">
-                  <div className="font-medium text-[#ededeb]">Shift Kasir 2 dimulai</div>
-                  <div className="text-[#8e8e8a] mt-0.5">Jordan Okafor • 1 jam lalu</div>
-                </div>
+                {notifications.length === 0 ? (
+                  <div className="rounded-lg bg-[#282826] p-2.5 text-[#8e8e8a]">
+                    Belum ada notifikasi baru.
+                  </div>
+                ) : (
+                  notifications.map((notif) => (
+                    <div key={notif.id} className="rounded-lg bg-[#282826] p-2.5">
+                      <div className="font-medium text-[#ededeb]">{notif.title}</div>
+                      <div className="text-[#8e8e8a] mt-0.5">{notif.subtitle}</div>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           )}
@@ -150,13 +159,28 @@ export const TopSectionBar: React.FC<TopSectionBarProps> = ({
 
           {/* Popover: Profile */}
           {openMenu === 'profile' && (
-            <div className="absolute right-0 top-[54px] z-50 w-[225px] rounded-[16px] bg-[#20201e] border border-white/[0.09] p-3.5 shadow-2xl animate-menu-pop">
+            <div className="absolute right-0 top-[54px] z-50 w-[235px] rounded-[16px] bg-[#20201e] border border-white/[0.09] p-3.5 shadow-2xl animate-menu-pop">
               <div className="text-[12.5px] font-semibold text-[#f2f2f0] truncate">{storeName}</div>
-              <div className="text-[11px] text-[#888884] mb-2.5">toko@orpheus.co</div>
+              <div className="text-[11px] text-[#888884] mb-2.5 truncate">
+                {userEmail || 'toko@orpheus.co'}
+              </div>
               <div className="border-t border-white/[0.07] pt-2 text-[11.5px] text-[#888884] space-y-1">
                 <div>Ruang Kerja: Orpheus</div>
-                <div>Peran: Akun Toko</div>
+                <div>Peran: Pemilik Toko</div>
               </div>
+              {onLogout && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOpenMenu(null);
+                    onLogout();
+                  }}
+                  className="mt-3 w-full h-[34px] rounded-[10px] bg-[#2a2a28] hover:bg-[#343431] text-[#f2f2f0] text-[12px] font-medium inline-flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                >
+                  <LogOut className="w-[13px] h-[13px]" strokeWidth={1.9} />
+                  <span>Keluar</span>
+                </button>
+              )}
             </div>
           )}
         </div>

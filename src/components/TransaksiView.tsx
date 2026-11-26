@@ -1,188 +1,29 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Search, ArrowUpDown, ArrowUp, ArrowDown, X, RotateCcw } from 'lucide-react';
 import { formatRupiah } from '../data/kasirData';
+import type {
+  PaymentMethod,
+  PosProduct,
+  TransactionRecord,
+} from '../types/pos';
+import { returnTransactionApi } from '../lib/posApi';
 import { AnimatedNumber } from './AnimatedNumber';
 import { AnimatedTitle } from './AnimatedTitle';
 
-type PaymentMethod = 'QRIS' | 'Kartu' | 'Tunai';
-type TransactionStatus = 'Selesai' | 'Dikembalikan';
 type MethodFilter = 'Semua' | PaymentMethod;
 type SortKey = 'id' | 'timestamp' | 'itemsSummary' | 'method' | 'total' | 'status';
 type SortDirection = 'asc' | 'desc';
 
-interface TransactionLineItem {
-  name: string;
-  qty: number;
-  unitPrice: number;
-}
-
-interface TransactionRecord {
-  id: string;
-  dateLabel: string;
-  timestamp: number;
-  method: PaymentMethod;
-  status: TransactionStatus;
-  discountPercent: number;
-  items: TransactionLineItem[];
-}
-
-const TAX_RATE = 0.11;
-
-const INITIAL_TRANSACTIONS: TransactionRecord[] = [
-  {
-    id: '0001',
-    dateLabel: '25 Nov 2026, 13:14',
-    timestamp: 1795612440000,
-    method: 'QRIS',
-    status: 'Selesai',
-    discountPercent: 0,
-    items: [
-      { name: 'Braket Orpheus Kokoh — Hitam Doff', qty: 4, unitPrice: 255000 },
-      { name: 'Sekrup Kayu Kepala Rata — Hitam', qty: 2, unitPrice: 45000 },
-    ],
-  },
-  {
-    id: '0002',
-    dateLabel: '25 Nov 2026, 12:48',
-    timestamp: 1795610880000,
-    method: 'Kartu',
-    status: 'Selesai',
-    discountPercent: 5,
-    items: [
-      { name: 'Kit Rel Aluminium Anodized', qty: 2, unitPrice: 680000 },
-      { name: 'Engsel Pivot Presisi — Grafit', qty: 3, unitPrice: 385000 },
-    ],
-  },
-  {
-    id: '0003',
-    dateLabel: '25 Nov 2026, 11:52',
-    timestamp: 1795607520000,
-    method: 'Tunai',
-    status: 'Selesai',
-    discountPercent: 0,
-    items: [
-      { name: 'Pin Rak Kuningan Giling (Isi 20)', qty: 2, unitPrice: 450000 },
-      { name: 'Bantalan Karet Anti-Selip 4mm', qty: 4, unitPrice: 35000 },
-    ],
-  },
-  {
-    id: '0004',
-    dateLabel: '25 Nov 2026, 11:15',
-    timestamp: 1795605300000,
-    method: 'QRIS',
-    status: 'Dikembalikan',
-    discountPercent: 0,
-    items: [
-      { name: 'Set Rak Modular Ruang Display', qty: 1, unitPrice: 1150000 },
-    ],
-  },
-  {
-    id: '0005',
-    dateLabel: '25 Nov 2026, 10:36',
-    timestamp: 1795602960000,
-    method: 'QRIS',
-    status: 'Selesai',
-    discountPercent: 10,
-    items: [
-      { name: 'Set Rak Modular Ruang Display', qty: 2, unitPrice: 1150000 },
-      { name: 'Gusset Baja Tersembunyi 8"', qty: 4, unitPrice: 270000 },
-      { name: 'Baut Jangkar Beton M10 (Isi 10)', qty: 3, unitPrice: 120000 },
-    ],
-  },
-  {
-    id: '0006',
-    dateLabel: '25 Nov 2026, 09:50',
-    timestamp: 1795600200000,
-    method: 'Kartu',
-    status: 'Selesai',
-    discountPercent: 0,
-    items: [
-      { name: 'Klem Kaca Tempered 10mm', qty: 6, unitPrice: 165000 },
-      { name: 'Rel Laci Soft-Close 450mm', qty: 2, unitPrice: 210000 },
-    ],
-  },
-  {
-    id: '0007',
-    dateLabel: '24 Nov 2026, 17:42',
-    timestamp: 1795542120000,
-    method: 'Tunai',
-    status: 'Selesai',
-    discountPercent: 0,
-    items: [
-      { name: 'Baut Jangkar Beton M10 (Isi 10)', qty: 5, unitPrice: 120000 },
-      { name: 'Sekrup Kayu Kepala Rata — Hitam', qty: 4, unitPrice: 45000 },
-    ],
-  },
-  {
-    id: '0008',
-    dateLabel: '24 Nov 2026, 16:28',
-    timestamp: 1795537680000,
-    method: 'QRIS',
-    status: 'Selesai',
-    discountPercent: 0,
-    items: [
-      { name: 'Engsel Pivot Presisi — Grafit', qty: 4, unitPrice: 385000 },
-    ],
-  },
-  {
-    id: '0009',
-    dateLabel: '24 Nov 2026, 15:10',
-    timestamp: 1795533000000,
-    method: 'Kartu',
-    status: 'Selesai',
-    discountPercent: 5,
-    items: [
-      { name: 'Braket Orpheus Kokoh — Hitam Doff', qty: 6, unitPrice: 255000 },
-      { name: 'Gusset Baja Tersembunyi 8"', qty: 2, unitPrice: 270000 },
-    ],
-  },
-  {
-    id: '0010',
-    dateLabel: '24 Nov 2026, 14:05',
-    timestamp: 1795529100000,
-    method: 'Tunai',
-    status: 'Selesai',
-    discountPercent: 0,
-    items: [
-      { name: 'Rel Laci Soft-Close 450mm', qty: 3, unitPrice: 210000 },
-      { name: 'Bantalan Karet Anti-Selip 4mm', qty: 5, unitPrice: 35000 },
-    ],
-  },
-  {
-    id: '0011',
-    dateLabel: '24 Nov 2026, 12:19',
-    timestamp: 1795522740000,
-    method: 'QRIS',
-    status: 'Selesai',
-    discountPercent: 0,
-    items: [
-      { name: 'Kit Rel Aluminium Anodized', qty: 1, unitPrice: 680000 },
-      { name: 'Klem Kaca Tempered 10mm', qty: 4, unitPrice: 165000 },
-    ],
-  },
-  {
-    id: '0012',
-    dateLabel: '24 Nov 2026, 10:44',
-    timestamp: 1795517040000,
-    method: 'Kartu',
-    status: 'Selesai',
-    discountPercent: 0,
-    items: [
-      { name: 'Pin Rak Kuningan Giling (Isi 20)', qty: 3, unitPrice: 450000 },
-      { name: 'Braket Orpheus Kokoh — Hitam Doff', qty: 2, unitPrice: 255000 },
-    ],
-  },
-];
-
 function computeTotals(trx: TransactionRecord) {
-  const subtotal = trx.items.reduce((sum, item) => sum + item.qty * item.unitPrice, 0);
-  const discountAmount = Math.round(subtotal * (trx.discountPercent / 100));
-  const afterDiscount = Math.max(0, subtotal - discountAmount);
-  const taxAmount = Math.round(afterDiscount * TAX_RATE);
-  const total = afterDiscount + taxAmount;
+  const subtotal = trx.subtotal;
+  const discountAmount = trx.discountAmount;
+  const taxAmount = trx.taxAmount;
+  const total = trx.total;
   const totalUnits = trx.items.reduce((sum, item) => sum + item.qty, 0);
   const itemsSummary =
-    trx.items.length === 1
+    trx.items.length === 0
+      ? '-'
+      : trx.items.length === 1
       ? trx.items[0].name
       : `${trx.items[0].name} (+${trx.items.length - 1} lainnya)`;
 
@@ -206,19 +47,29 @@ function summarizeReturnedProducts(records: TransactionRecord[], emptyLabel: str
 
 interface TransaksiViewProps {
   storeName: string;
+  transactions: TransactionRecord[];
+  onTransactionReturned: (result: {
+    transaction: TransactionRecord;
+    products: PosProduct[];
+  }) => void;
 }
 
-export const TransaksiView: React.FC<TransaksiViewProps> = ({ storeName }) => {
-  const [transactions, setTransactions] = useState<TransactionRecord[]>(INITIAL_TRANSACTIONS);
+export const TransaksiView: React.FC<TransaksiViewProps> = ({
+  storeName,
+  transactions,
+  onTransactionReturned,
+}) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [methodFilter, setMethodFilter] = useState<MethodFilter>('Semua');
   const [sortKey, setSortKey] = useState<SortKey>('id');
-  const [sortDir, setSortDir] = useState<SortDirection>('asc');
+  const [sortDir, setSortDir] = useState<SortDirection>('desc');
   const [isInitialEntry, setIsInitialEntry] = useState(true);
   const [isScrolled, setIsScrolled] = useState(false);
 
   const [detailTrxId, setDetailTrxId] = useState<string | null>(null);
   const [returnTarget, setReturnTarget] = useState<TransactionRecord | null>(null);
+  const [isReturning, setIsReturning] = useState(false);
+  const [returnError, setReturnError] = useState('');
   const tableScrollRef = useRef<HTMLDivElement | null>(null);
 
   const detailTrx = useMemo(
@@ -237,8 +88,9 @@ export const TransaksiView: React.FC<TransaksiViewProps> = ({ storeName }) => {
       syncScrollState();
     };
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
+      if (e.key === 'Escape' && !isReturning) {
         setReturnTarget(null);
+        setReturnError('');
       }
     };
     syncScrollState();
@@ -248,21 +100,30 @@ export const TransaksiView: React.FC<TransaksiViewProps> = ({ storeName }) => {
       window.removeEventListener('scroll', handleWindowScroll);
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, []);
+  }, [isReturning]);
 
   const scrollToTop = () => {
     tableScrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleConfirmReturn = () => {
-    if (!returnTarget) return;
-    setTransactions((prev) =>
-      prev.map((trx) =>
-        trx.id === returnTarget.id ? { ...trx, status: 'Dikembalikan' } : trx
-      )
-    );
-    setReturnTarget(null);
+  const handleConfirmReturn = async () => {
+    if (!returnTarget || isReturning) return;
+    setReturnError('');
+    setIsReturning(true);
+    try {
+      const result = await returnTransactionApi(returnTarget.id);
+      onTransactionReturned(result);
+      setReturnTarget(null);
+    } catch (error) {
+      setReturnError(
+        error instanceof Error
+          ? error.message
+          : 'Gagal mengembalikan transaksi.'
+      );
+    } finally {
+      setIsReturning(false);
+    }
   };
 
   const summary = useMemo(() => {
@@ -583,10 +444,14 @@ export const TransaksiView: React.FC<TransaksiViewProps> = ({ storeName }) => {
                 <tr>
                   <td colSpan={6} className="py-12 text-center">
                     <div className="text-[13.5px] font-medium text-[#f2f2f0]">
-                      Transaksi tidak ditemukan
+                      {transactions.length === 0
+                        ? 'Belum ada transaksi'
+                        : 'Transaksi tidak ditemukan'}
                     </div>
                     <p className="text-[12px] text-[#7c7c78] mt-1">
-                      Coba kata kunci pencarian atau filter metode lain.
+                      {transactions.length === 0
+                        ? 'Transaksi dari halaman Kasir akan muncul di sini.'
+                        : 'Coba kata kunci pencarian atau filter metode lain.'}
                     </p>
                   </td>
                 </tr>
@@ -702,9 +567,9 @@ export const TransaksiView: React.FC<TransaksiViewProps> = ({ storeName }) => {
 
                   {/* First Dashed Divider & Line Items */}
                   <div className="mt-[18px] pt-[16px] border-t border-dashed border-white/[0.12] space-y-[10px]">
-                    {detailTrx.items.map((line) => (
+                    {detailTrx.items.map((line, idx) => (
                       <div
-                        key={line.name}
+                        key={`${line.productId ?? line.name}-${idx}`}
                         className="flex items-start justify-between gap-3 text-[12.5px]"
                       >
                         <span className="text-[#d6d6d2] leading-[1.4]">
@@ -785,7 +650,10 @@ export const TransaksiView: React.FC<TransaksiViewProps> = ({ storeName }) => {
                     <button
                       type="button"
                       disabled={isReturned}
-                      onClick={() => setReturnTarget(detailTrx)}
+                      onClick={() => {
+                        setReturnError('');
+                        setReturnTarget(detailTrx);
+                      }}
                       className={`w-full h-[40px] rounded-full text-[12.5px] font-semibold inline-flex items-center justify-center gap-[8px] border transition-colors ${
                         isReturned
                           ? 'bg-[#1a1a19] text-[#6e6e6a] border-white/[0.06] cursor-not-allowed'
@@ -827,7 +695,12 @@ export const TransaksiView: React.FC<TransaksiViewProps> = ({ storeName }) => {
       {returnTarget && (
         <div
           className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 animate-filter-fade"
-          onClick={() => setReturnTarget(null)}
+          onClick={() => {
+            if (!isReturning) {
+              setReturnTarget(null);
+              setReturnError('');
+            }
+          }}
         >
           <div
             className="w-full max-w-[440px] bg-[#181817] border border-white/[0.12] rounded-[22px] p-[22px] shadow-2xl animate-modal-up"
@@ -848,9 +721,13 @@ export const TransaksiView: React.FC<TransaksiViewProps> = ({ storeName }) => {
                     </div>
                     <button
                       type="button"
-                      onClick={() => setReturnTarget(null)}
+                      disabled={isReturning}
+                      onClick={() => {
+                        setReturnTarget(null);
+                        setReturnError('');
+                      }}
                       aria-label="Tutup dialog"
-                      className="w-[32px] h-[32px] rounded-full bg-[#242422] hover:bg-[#2e2e2b] text-[#b4b4b0] hover:text-white flex items-center justify-center transition-colors cursor-pointer shrink-0"
+                      className="w-[32px] h-[32px] rounded-full bg-[#242422] hover:bg-[#2e2e2b] disabled:opacity-40 text-[#b4b4b0] hover:text-white flex items-center justify-center transition-colors cursor-pointer shrink-0"
                     >
                       <X className="w-[15px] h-[15px]" />
                     </button>
@@ -866,22 +743,34 @@ export const TransaksiView: React.FC<TransaksiViewProps> = ({ storeName }) => {
                       {formatRupiah(calc.total)}
                     </span>{' '}
                     sebagai <span className="font-semibold text-[#f3f3f1]">Dikembalikan</span>?
+                    Stok produk terkait akan otomatis dikembalikan.
                   </div>
+
+                  {returnError && (
+                    <div className="mb-[14px] rounded-[10px] bg-white/[0.05] border border-white/[0.12] px-[12px] py-[8px] text-[12px] text-[#f2f2f0]">
+                      {returnError}
+                    </div>
+                  )}
 
                   <div className="flex items-center justify-end gap-[10px]">
                     <button
                       type="button"
-                      onClick={() => setReturnTarget(null)}
-                      className="h-[40px] px-[18px] rounded-full bg-[#242422] hover:bg-[#2e2e2b] text-[#e5e5e2] text-[12.5px] font-medium transition-colors cursor-pointer"
+                      disabled={isReturning}
+                      onClick={() => {
+                        setReturnTarget(null);
+                        setReturnError('');
+                      }}
+                      className="h-[40px] px-[18px] rounded-full bg-[#242422] hover:bg-[#2e2e2b] disabled:opacity-40 text-[#e5e5e2] text-[12.5px] font-medium transition-colors cursor-pointer"
                     >
                       Batal
                     </button>
                     <button
                       type="button"
+                      disabled={isReturning}
                       onClick={handleConfirmReturn}
-                      className="h-[40px] px-[20px] rounded-full bg-[#ededeb] hover:bg-white text-[#141414] text-[12.5px] font-semibold transition-colors cursor-pointer"
+                      className="h-[40px] px-[20px] rounded-full bg-[#ededeb] hover:bg-white disabled:opacity-40 text-[#141414] text-[12.5px] font-semibold transition-colors cursor-pointer"
                     >
-                      Kembalikan transaksi
+                      {isReturning ? 'Memproses...' : 'Kembalikan transaksi'}
                     </button>
                   </div>
                 </>

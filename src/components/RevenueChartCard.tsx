@@ -1,17 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { REVENUE_BY_RANGE, RevenueRange } from '../data/dashboardData';
+import type { DashboardDataset } from '../types/pos';
 import { AnimatedNumber } from './AnimatedNumber';
 
 interface RevenueChartCardProps {
   range: RevenueRange;
   onRangeChange: (range: RevenueRange) => void;
+  series?: DashboardDataset['revenueSeries'];
 }
 
 export const RevenueChartCard: React.FC<RevenueChartCardProps> = ({
   range,
   onRangeChange,
+  series,
 }) => {
-  const config = REVENUE_BY_RANGE[range];
+  const config = series && series.range === range ? series : REVENUE_BY_RANGE[range];
   const [selectedIndex, setSelectedIndex] = useState<number>(config.defaultActiveIndex);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [tooltipIndex, setTooltipIndex] = useState<number>(config.defaultActiveIndex);
@@ -19,14 +22,14 @@ export const RevenueChartCard: React.FC<RevenueChartCardProps> = ({
   const isInternalToggleRef = useRef(false);
 
   useEffect(() => {
-    setSelectedIndex(REVENUE_BY_RANGE[range].defaultActiveIndex);
-    setTooltipIndex(REVENUE_BY_RANGE[range].defaultActiveIndex);
+    setSelectedIndex(config.defaultActiveIndex);
+    setTooltipIndex(config.defaultActiveIndex);
     setHoveredIndex(null);
     if (leaveTimerRef.current) {
       window.clearTimeout(leaveTimerRef.current);
       leaveTimerRef.current = null;
     }
-  }, [range]);
+  }, [range, config.defaultActiveIndex]);
 
   useEffect(() => {
     return () => {

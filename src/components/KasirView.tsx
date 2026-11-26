@@ -15,11 +15,13 @@ import {
   ArrowDown,
   Wifi,
 } from 'lucide-react';
-import {
-  INITIAL_KASIR_PRODUCTS,
-  KasirProduct,
-  formatRupiah,
-} from '../data/kasirData';
+import { formatRupiah } from '../data/kasirData';
+import type {
+  PaymentMethod,
+  PosProduct,
+  TransactionRecord,
+} from '../types/pos';
+import { checkoutApi } from '../lib/posApi';
 import { AnimatedNumber } from './AnimatedNumber';
 import { AnimatedTitle } from './AnimatedTitle';
 
@@ -30,16 +32,25 @@ interface CartItem {
   quantity: number;
 }
 
-type PaymentMethod = 'Kartu' | 'QRIS' | 'Tunai';
-type PaymentModalPhase = 'processing' | 'cash_input' | 'success';
+type PaymentModalPhase = 'processing' | 'cash_input' | 'success' | 'error';
 
 type SortField = 'name' | 'price';
 type SortDirection = 'asc' | 'desc';
 
 const TAX_RATE = 0.11;
 
-export const KasirView: React.FC = () => {
-  const [products, setProducts] = useState<KasirProduct[]>(INITIAL_KASIR_PRODUCTS);
+interface KasirViewProps {
+  products: PosProduct[];
+  onCheckoutSuccess: (result: {
+    transaction: TransactionRecord;
+    products: PosProduct[];
+  }) => void;
+}
+
+export const KasirView: React.FC<KasirViewProps> = ({
+  products,
+  onCheckoutSuccess,
+}) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortDir, setSortDir] = useState<SortDirection>('asc');
@@ -53,6 +64,8 @@ export const KasirView: React.FC = () => {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('Kartu');
   const [paymentPhase, setPaymentPhase] = useState<PaymentModalPhase>('processing');
   const [cashReceived, setCashReceived] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [paymentError, setPaymentError] = useState('');
   const [successSnapshot, setSuccessSnapshot] = useState<{
     receiptNo: string;
     total: number;
@@ -62,6 +75,7 @@ export const KasirView: React.FC = () => {
   } | null>(null);
 
   const processingTimerRef = useRef<number | null>(null);
+  const modalOpenRef = useRef(false);
 
   const clearProcessingTimer = () => {
     if (processingTimerRef.current !== null) {
@@ -97,7 +111,9 @@ export const KasirView: React.FC = () => {
           : b.name.localeCompare(a.name, 'id')
       );
     } else if (sortField === 'price') {
-      list.sort((a, b) => (sortDir === 'asc' ? a.price - b.price : b.price - a.price));
+      list.sort((a, b) =>
+        sortDir === 'asc' ? a.sellPrice - b.sellPrice : b.sellPrice - a.sellPrice
+      );
     }
 
     return list;
@@ -106,7 +122,7 @@ export const KasirView: React.FC = () => {
   const getCartQuantity = (productId: string) =>
     cart.find((item) => item.id === productId)?.quantity ?? 0;
 
-  const addProductToCart = (product: KasirProduct) => {
+  const addProductToCart = (product: PosProduct) => {
     const currentQty = getCartQuantity(product.id);
     if (currentQty >= product.stock) return;
 
@@ -122,7 +138,7 @@ export const KasirView: React.FC = () => {
         {
           id: product.id,
           name: product.name,
-          unitPrice: product.price,
+          unitPrice: product.sellPrice,
           quantity: 1,
         },
       ];
@@ -176,31 +192,48 @@ export const KasirView: React.FC = () => {
   const parsedCash = Number(cashReceived.replace(/[^\d]/g, '')) || 0;
   const cashChange = Math.max(0, parsedCash - total);
 
-  const finalizeSale = (method: PaymentMethod, paidCashAmount = 0) => {
-    setProducts((prev) =>
-      prev.map((prod) => {
-        const sold = cart.find((c) => c.id === prod.id);
-        if (!sold) return prod;
-        return { ...prod, stock: Math.max(0, prod.stock - sold.quantity) };
-      })
-    );
+  const finalizeSale = async (method: PaymentMethod, paidCashAmount = 0) => {
+    if (cart.length === 0 || isSubmitting) return;
+    setIsSubmitting(true);
+    setPaymentError('');
+    try {
+      const result = await checkoutApi({
+        items: cart.map((item) => ({ productId: item.id, qty: item.quantity })),
+        method,
+        discountPercent: appliedDiscountPercent,
+        paidCash: method === 'Tunai' ? paidCashAmount : 0,
+      });
 
-    const receiptNo = `#POS-${Math.floor(1000 + Math.random() * 9000)}`;
-    setSuccessSnapshot({
-      receiptNo,
-      total,
-      method,
-      paidCash: paidCashAmount,
-      change: method === 'Tunai' ? Math.max(0, paidCashAmount - total) : 0,
-    });
-    setPaymentPhase('success');
-    handleClearCart();
+      onCheckoutSuccess(result);
+      setSuccessSnapshot({
+        receiptNo: result.transaction.receiptNo,
+        total: result.transaction.total,
+        method: result.transaction.method,
+        paidCash: result.transaction.paidCash,
+        change: result.transaction.changeAmount,
+      });
+      setPaymentPhase('success');
+      handleClearCart();
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Pembayaran gagal diproses.';
+      setPaymentError(message);
+      if (method !== 'Tunai') {
+        setPaymentPhase('error');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleChargeClick = () => {
-    if (cart.length === 0) return;
+    if (cart.length === 0 || isSubmitting) return;
     clearProcessingTimer();
     setSuccessSnapshot(null);
+    setPaymentError('');
+    modalOpenRef.current = true;
     setShowPaymentModal(true);
 
     if (paymentMethod === 'Tunai') {
@@ -209,25 +242,29 @@ export const KasirView: React.FC = () => {
       return;
     }
 
-    // Kartu or QRIS -> show animated processing visualization first, then confirm
+    // Kartu or QRIS -> show animated processing visualization first, then persist via API
     setPaymentPhase('processing');
     const activeMethod = paymentMethod;
     processingTimerRef.current = window.setTimeout(() => {
       processingTimerRef.current = null;
-      finalizeSale(activeMethod);
-    }, 1600);
+      if (!modalOpenRef.current) return;
+      void finalizeSale(activeMethod);
+    }, 1500);
   };
 
-  const handleConfirmCashPayment = (e: React.FormEvent) => {
+  const handleConfirmCashPayment = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (cart.length === 0 || parsedCash < total) return;
-    finalizeSale('Tunai', parsedCash);
+    if (cart.length === 0 || parsedCash < total || isSubmitting) return;
+    await finalizeSale('Tunai', parsedCash);
   };
 
   const handleClosePaymentModal = () => {
+    if (isSubmitting) return;
     clearProcessingTimer();
+    modalOpenRef.current = false;
     setShowPaymentModal(false);
     setCashReceived('');
+    setPaymentError('');
   };
 
   const quickCashSuggestions = useMemo(() => {
@@ -373,7 +410,7 @@ export const KasirView: React.FC = () => {
                       <div className="w-full mt-[14px]">
                         <div className="text-[13.5px] font-semibold text-[#ededeb] tabular-nums">
                           <AnimatedNumber
-                            value={product.price}
+                            value={product.sellPrice}
                             duration={480}
                             formatter={formatRupiah}
                           />
@@ -631,6 +668,8 @@ export const KasirView: React.FC = () => {
                 <h3 className="text-[16.5px] font-semibold text-[#f3f3f1]">
                   {paymentPhase === 'success'
                     ? 'Pembayaran Selesai'
+                    : paymentPhase === 'error'
+                    ? 'Pembayaran Gagal'
                     : paymentPhase === 'cash_input'
                     ? 'Pembayaran Tunai'
                     : `Pembayaran ${paymentMethod}`}
@@ -643,9 +682,10 @@ export const KasirView: React.FC = () => {
               </div>
               <button
                 type="button"
+                disabled={isSubmitting}
                 onClick={handleClosePaymentModal}
                 aria-label="Tutup jendela pembayaran"
-                className="w-[30px] h-[30px] rounded-full bg-white/[0.05] text-[#9e9e9a] hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+                className="w-[30px] h-[30px] rounded-full bg-white/[0.05] text-[#9e9e9a] hover:text-white disabled:opacity-40 flex items-center justify-center transition-colors cursor-pointer"
               >
                 <X className="w-[16px] h-[16px]" />
               </button>
@@ -752,18 +792,48 @@ export const KasirView: React.FC = () => {
                   </div>
                 </div>
 
+                {paymentError && (
+                  <div className="mb-3 rounded-[10px] bg-white/[0.05] border border-white/[0.12] px-3 py-2 text-[12px] text-[#f2f2f0]">
+                    {paymentError}
+                  </div>
+                )}
+
                 <button
                   type="submit"
-                  disabled={parsedCash < total}
+                  disabled={parsedCash < total || isSubmitting}
                   className={`w-full h-[46px] rounded-full text-[13.5px] font-semibold transition-colors ${
-                    parsedCash < total
+                    parsedCash < total || isSubmitting
                       ? 'bg-[#2b2b29] text-[#7c7c78] cursor-not-allowed'
                       : 'bg-[#ededeb] hover:bg-white text-[#141414] cursor-pointer'
                   }`}
                 >
-                  Konfirmasi Pembayaran Tunai
+                  {isSubmitting ? 'Memproses...' : 'Konfirmasi Pembayaran Tunai'}
                 </button>
               </form>
+            )}
+
+            {paymentPhase === 'error' && (
+              <div className="py-3 space-y-4">
+                <div className="rounded-[14px] bg-[#131312] border border-white/[0.1] p-4 text-[13px] text-[#d6d6d2] leading-[1.5]">
+                  {paymentError || 'Pembayaran gagal diproses. Silakan coba lagi.'}
+                </div>
+                <div className="flex items-center gap-2.5">
+                  <button
+                    type="button"
+                    onClick={handleClosePaymentModal}
+                    className="flex-1 h-[42px] rounded-full bg-[#242422] hover:bg-[#2e2e2b] text-[#e5e5e2] text-[12.5px] font-medium transition-colors cursor-pointer"
+                  >
+                    Tutup
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleChargeClick}
+                    className="flex-1 h-[42px] rounded-full bg-[#ededeb] hover:bg-white text-[#141414] text-[12.5px] font-semibold transition-colors cursor-pointer"
+                  >
+                    Coba lagi
+                  </button>
+                </div>
+              </div>
             )}
 
             {/* Phase 3: Animated Confirmation Success */}

@@ -40,17 +40,23 @@ export const TotalVisitsCard: React.FC<TotalVisitsCardProps> = ({ data }) => {
   const gapDeg = orderedMethods.length > 1 ? 5 : 0;
   let currentAngle = -90;
 
-  const segments = orderedMethods.map((m) => {
-    const rawSweep = (m.count / totalCount) * 360;
-    const start = currentAngle + gapDeg / 2;
-    const end = currentAngle + rawSweep - gapDeg / 2;
-    currentAngle += rawSweep;
-    return {
-      ...m,
-      start,
-      end: Math.max(start + 1, end),
-    };
-  });
+  const segments =
+    totalCount > 0
+      ? orderedMethods
+          .filter((m) => m.count > 0)
+          .map((m, _i, arr) => {
+            const rawSweep = (m.count / totalCount) * 360;
+            const localGap = arr.length > 1 ? gapDeg : 0;
+            const start = currentAngle + localGap / 2;
+            const end = currentAngle + rawSweep - localGap / 2;
+            currentAngle += rawSweep;
+            return {
+              ...m,
+              start,
+              end: Math.max(start + 1, end),
+            };
+          })
+      : [];
 
   const activeMethod = hoveredMethod
     ? data.methods.find((m) => m.name === hoveredMethod)
@@ -110,52 +116,63 @@ export const TotalVisitsCard: React.FC<TotalVisitsCardProps> = ({ data }) => {
       {/* Right Column: Segmented Donut */}
       <div className="relative w-[144px] h-[144px] flex items-center justify-center shrink-0">
         <svg viewBox="0 0 156 156" className="w-full h-full">
-          {segments.map((seg, idx) => {
-            const isDimmed = hoveredMethod !== null && hoveredMethod !== seg.name;
-            if (orderedMethods.length === 1) {
+          {segments.length === 0 ? (
+            <circle
+              cx="78"
+              cy="78"
+              r="60"
+              fill="none"
+              stroke="#2a2a28"
+              strokeWidth="22"
+            />
+          ) : (
+            segments.map((seg, idx) => {
+              const isDimmed = hoveredMethod !== null && hoveredMethod !== seg.name;
+              if (segments.length === 1) {
+                return (
+                  <circle
+                    key={seg.name}
+                    cx="78"
+                    cy="78"
+                    r="60"
+                    pathLength={100}
+                    strokeDasharray={100}
+                    strokeDashoffset={donutReady ? 0 : 100}
+                    fill="none"
+                    stroke={seg.color}
+                    strokeWidth="22"
+                    style={{
+                      transition: 'stroke-dashoffset 1350ms cubic-bezier(0.16, 1, 0.3, 1)',
+                      transitionDelay: '920ms',
+                    }}
+                  />
+                );
+              }
               return (
-                <circle
+                <path
                   key={seg.name}
-                  cx="78"
-                  cy="78"
-                  r="60"
+                  d={describeArc(78, 78, 60, seg.start, seg.end)}
                   pathLength={100}
                   strokeDasharray={100}
                   strokeDashoffset={donutReady ? 0 : 100}
                   fill="none"
                   stroke={seg.color}
                   strokeWidth="22"
+                  strokeLinecap="butt"
+                  onMouseEnter={() => setHoveredMethod(seg.name)}
+                  onMouseLeave={() => setHoveredMethod(null)}
+                  className={`cursor-pointer ${
+                    isDimmed ? 'opacity-35' : 'opacity-100'
+                  }`}
                   style={{
-                    transition: 'stroke-dashoffset 1350ms cubic-bezier(0.16, 1, 0.3, 1)',
-                    transitionDelay: '920ms',
+                    transition:
+                      'stroke-dashoffset 1350ms cubic-bezier(0.16, 1, 0.3, 1), opacity 150ms ease',
+                    transitionDelay: `${920 + idx * 150}ms, 0ms`,
                   }}
                 />
               );
-            }
-            return (
-              <path
-                key={seg.name}
-                d={describeArc(78, 78, 60, seg.start, seg.end)}
-                pathLength={100}
-                strokeDasharray={100}
-                strokeDashoffset={donutReady ? 0 : 100}
-                fill="none"
-                stroke={seg.color}
-                strokeWidth="22"
-                strokeLinecap="butt"
-                onMouseEnter={() => setHoveredMethod(seg.name)}
-                onMouseLeave={() => setHoveredMethod(null)}
-                className={`cursor-pointer ${
-                  isDimmed ? 'opacity-35' : 'opacity-100'
-                }`}
-                style={{
-                  transition:
-                    'stroke-dashoffset 1350ms cubic-bezier(0.16, 1, 0.3, 1), opacity 150ms ease',
-                  transitionDelay: `${920 + idx * 150}ms, 0ms`,
-                }}
-              />
-            );
-          })}
+            })
+          )}
         </svg>
 
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center px-5">

@@ -1,10 +1,25 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   PERIOD_DATA,
   PeriodFilter,
   RevenueRange,
   NavTab,
 } from './data/dashboardData';
+import type {
+  AuthResponse,
+  AuthUser,
+  DashboardDataset,
+  NotificationItem,
+  PosProduct,
+  StoreProfile,
+  TransactionRecord,
+} from './types/pos';
+import {
+  fetchBootstrap,
+  fetchDashboard,
+  logoutApi,
+  saveStoreNameApi,
+} from './lib/posApi';
 import { SidebarNav } from './components/SidebarNav';
 import { TopSectionBar } from './components/TopSectionBar';
 import { KpiCards } from './components/KpiCards';
@@ -16,34 +31,140 @@ import { ProdukView } from './components/ProdukView';
 import { TransaksiView } from './components/TransaksiView';
 import { PengaturanView } from './components/PengaturanView';
 import { AnimatedTitle } from './components/AnimatedTitle';
+import { AuthView } from './components/AuthView';
+import { StoreSetupView } from './components/StoreSetupView';
 
 const PERIOD_FILTERS: PeriodFilter[] = ['Hari Ini', '7 Hari', '30 Hari'];
-const STORE_NAME_STORAGE_KEY = 'orpheus_store_name';
-
-function getInitialStoreName(): string {
-  try {
-    const saved = window.localStorage.getItem(STORE_NAME_STORAGE_KEY);
-    return saved && saved.trim() ? saved.trim() : 'Orpheus Shop';
-  } catch {
-    return 'Orpheus Shop';
-  }
-}
 
 export default function App() {
+  const [authUser, setAuthUser] = useState<AuthUser | null>(null);
+  const [activeStore, setActiveStore] = useState<StoreProfile | null>(null);
+
   const [activeTab, setActiveTab] = useState<NavTab>('Dasbor');
   const [period, setPeriod] = useState<PeriodFilter>('Hari Ini');
   const [revenueRange, setRevenueRange] = useState<RevenueRange>('7 Hari');
-  const [storeName, setStoreName] = useState<string>(getInitialStoreName);
+  const [storeName, setStoreName] = useState<string>('Orpheus Shop');
+  const [products, setProducts] = useState<PosProduct[]>([]);
+  const [transactions, setTransactions] = useState<TransactionRecord[]>([]);
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const [dashboardData, setDashboardData] = useState<DashboardDataset | null>(null);
+  const [refreshTick, setRefreshTick] = useState(0);
 
-  const handleSaveStoreName = (nextName: string) => {
+  const syncBootstrap = useCallback(async () => {
+    if (!authUser || !activeStore) return;
+    try {
+      const data = await fetchBootstrap();
+      setStoreName(data.storeName);
+      setProducts(data.products);
+      setTransactions(data.transactions);
+      setNotifications(data.notifications);
+    } catch (error) {
+      console.error('Gagal memuat data awal POS:', error);
+    }
+  }, [authUser, activeStore]);
+
+  useEffect(() => {
+    if (authUser && activeStore) {
+      void syncBootstrap();
+    }
+  }, [authUser, activeStore, syncBootstrap]);
+
+  useEffect(() => {
+    if (!authUser || !activeStore) return;
+    let cancelled = false;
+    fetchDashboard(period, revenueRange)
+      .then((data) => {
+        if (!cancelled) {
+          setDashboardData(data);
+        }
+      })
+      .catch((error) => {
+        console.error('Gagal memuat analitik dasbor:', error);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [authUser, activeStore, period, revenueRange, refreshTick]);
+
+  const handleAuthSuccess = (res: AuthResponse) => {
+    if (!res.user || !res.accessToken) return;
+    setAuthUser(res.user);
+    setActiveStore(res.store);
+    if (res.store) {
+      setStoreName(res.store.storeName);
+    }
+    setActiveTab('Dasbor');
+  };
+
+  const handleStoreCreated = (store: StoreProfile) => {
+    setActiveStore(store);
+    setStoreName(store.storeName);
+    setActiveTab('Dasbor');
+  };
+
+  const handleLogout = async () => {
+    await logoutApi();
+    setAuthUser(null);
+    setActiveStore(null);
+    setProducts([]);
+    setTransactions([]);
+    setNotifications([]);
+    setDashboardData(null);
+    setActiveTab('Dasbor');
+  };
+
+  const refreshLiveAggregates = useCallback(() => {
+    setRefreshTick((prev) => prev + 1);
+    void syncBootstrap();
+  }, [syncBootstrap]);
+
+  const handleSaveStoreName = async (nextName: string) => {
     const trimmed = nextName.trim();
     if (!trimmed) return;
-    setStoreName(trimmed);
-    try {
-      window.localStorage.setItem(STORE_NAME_STORAGE_KEY, trimmed);
-    } catch {
-      // ignore storage errors
-    }
+    const res = await saveStoreNameApi(trimmed);
+    setStoreName(res.storeName);
+    setActiveStore((prev) =>
+      prev ? { ...prev, storeName: res.storeName } : prev
+    );
+  };
+
+  const handleProductCreated = (product: PosProduct) => {
+    setProducts((prev) => [...prev, product]);
+    refreshLiveAggregates();
+  };
+
+  const handleProductUpdated = (updated: PosProduct) => {
+    setProducts((prev) =>
+      prev.map((item) => (item.id === updated.id ? updated : item))
+    );
+    refreshLiveAggregates();
+  };
+
+  const handleProductDeleted = (deletedId: string) => {
+    setProducts((prev) => prev.filter((item) => item.id !== deletedId));
+    refreshLiveAggregates();
+  };
+
+  const handleCheckoutSuccess = (result: {
+    transaction: TransactionRecord;
+    products: PosProduct[];
+  }) => {
+    setProducts(result.products);
+    setTransactions((prev) => [result.transaction, ...prev]);
+    refreshLiveAggregates();
+  };
+
+  const handleTransactionReturned = (result: {
+    transaction: TransactionRecord;
+    products: PosProduct[];
+  }) => {
+    setProducts(result.products);
+    setTransactions((prev) =>
+      prev.map((trx) =>
+        trx.id === result.transaction.id ? result.transaction : trx
+      )
+    );
+    refreshLiveAggregates();
   };
 
   const handlePeriodChange = (next: PeriodFilter) => {
@@ -53,14 +174,38 @@ export default function App() {
     }
   };
 
-  const dataset = PERIOD_DATA[period];
+  if (!authUser) {
+    return <AuthView onAuthSuccess={handleAuthSuccess} />;
+  }
+
+  if (!activeStore) {
+    return (
+      <StoreSetupView
+        userEmail={authUser.email}
+        onStoreCreated={handleStoreCreated}
+        onLogout={handleLogout}
+      />
+    );
+  }
+
+  const fallbackDataset = PERIOD_DATA[period];
+  const kpis = dashboardData?.kpis ?? fallbackDataset.kpis;
+  const heatmap = dashboardData?.heatmap ?? fallbackDataset.heatmap;
+  const totalTransactions =
+    dashboardData?.totalTransactions ?? fallbackDataset.totalTransactions;
 
   return (
     <div className="min-h-screen w-full bg-[#111110] text-[#f2f2f0] overflow-x-clip">
       <SidebarNav activeTab={activeTab} onSelectTab={setActiveTab} />
 
       {/* Monochrome Floating Top Pill matching center container width */}
-      <TopSectionBar storeName={storeName} onNavigate={setActiveTab} />
+      <TopSectionBar
+        storeName={storeName}
+        userEmail={authUser.email}
+        notifications={notifications}
+        onNavigate={setActiveTab}
+        onLogout={handleLogout}
+      />
 
       {/* Main Content Shell with equal 28px clearance from left navbar (88px) and right edge */}
       <div className="relative w-full pl-[88px] sm:pl-[116px] pr-[16px] sm:pr-[28px] pt-[102px] pb-[20px]">
@@ -101,7 +246,7 @@ export default function App() {
 
               {/* Row 1: 4 Stepped-Tone KPI Cards */}
               <div key={`kpi-${period}`} className="mt-[14px]">
-                <KpiCards data={dataset.kpis} onNavigate={setActiveTab} />
+                <KpiCards data={kpis} onNavigate={setActiveTab} />
               </div>
 
               {/* Row 2: Full-width Revenue Bar Chart (7 Hari / 30 Hari) */}
@@ -113,6 +258,7 @@ export default function App() {
                 <RevenueChartCard
                   range={revenueRange}
                   onRangeChange={setRevenueRange}
+                  series={dashboardData?.revenueSeries}
                 />
               </div>
 
@@ -125,22 +271,34 @@ export default function App() {
                   className="col-span-12 lg:col-span-7 h-[228px] animate-tab-up"
                   style={{ animationDelay: '490ms' }}
                 >
-                  <VisitsByTimeCard data={dataset.heatmap} />
+                  <VisitsByTimeCard data={heatmap} />
                 </div>
                 <div
                   className="col-span-12 lg:col-span-5 h-[228px] animate-tab-up"
                   style={{ animationDelay: '580ms' }}
                 >
-                  <TotalVisitsCard data={dataset.totalTransactions} />
+                  <TotalVisitsCard data={totalTransactions} />
                 </div>
               </div>
             </main>
           ) : activeTab === 'Kasir' ? (
-            <KasirView />
+            <KasirView
+              products={products}
+              onCheckoutSuccess={handleCheckoutSuccess}
+            />
           ) : activeTab === 'Produk' ? (
-            <ProdukView />
+            <ProdukView
+              products={products}
+              onProductCreated={handleProductCreated}
+              onProductUpdated={handleProductUpdated}
+              onProductDeleted={handleProductDeleted}
+            />
           ) : activeTab === 'Transaksi' ? (
-            <TransaksiView storeName={storeName} />
+            <TransaksiView
+              storeName={storeName}
+              transactions={transactions}
+              onTransactionReturned={handleTransactionReturned}
+            />
           ) : (
             <PengaturanView
               storeName={storeName}

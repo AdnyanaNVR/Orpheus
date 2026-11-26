@@ -11,46 +11,41 @@ import {
   Trash2,
 } from 'lucide-react';
 import { formatRupiah } from '../data/kasirData';
+import type { PosProduct } from '../types/pos';
+import {
+  createProductApi,
+  deleteProductApi,
+  updateProductApi,
+} from '../lib/posApi';
 import { AnimatedNumber } from './AnimatedNumber';
 import { AnimatedTitle } from './AnimatedTitle';
-
-interface InventoryItem {
-  id: string;
-  name: string;
-  costPrice: number;
-  sellPrice: number;
-  stock: number;
-}
 
 type SortKey = 'id' | 'name' | 'sellPrice' | 'margin' | 'stock';
 type SortDirection = 'asc' | 'desc';
 type ProductActionMode = 'edit' | 'restock' | 'delete';
 
-const INITIAL_PRODUK_INVENTORY: InventoryItem[] = [
-  { id: '0001', name: 'Braket Orpheus Kokoh — Hitam Doff', costPrice: 165000, sellPrice: 255000, stock: 140 },
-  { id: '0002', name: 'Pin Rak Kuningan Giling (Isi 20)', costPrice: 290000, sellPrice: 450000, stock: 95 },
-  { id: '0003', name: 'Gusset Baja Tersembunyi 8"', costPrice: 180000, sellPrice: 270000, stock: 112 },
-  { id: '0004', name: 'Kit Rel Aluminium Anodized', costPrice: 460000, sellPrice: 680000, stock: 4 },
-  { id: '0005', name: 'Engsel Pivot Presisi — Grafit', costPrice: 245000, sellPrice: 385000, stock: 128 },
-  { id: '0006', name: 'Klem Kaca Tempered 10mm', costPrice: 105000, sellPrice: 165000, stock: 165 },
-  { id: '0007', name: 'Set Rak Modular Ruang Display', costPrice: 780000, sellPrice: 1150000, stock: 3 },
-  { id: '0008', name: 'Baut Jangkar Beton M10 (Isi 10)', costPrice: 75000, sellPrice: 120000, stock: 210 },
-  { id: '0009', name: 'Sekrup Kayu Kepala Rata — Hitam', costPrice: 28000, sellPrice: 45000, stock: 264 },
-  { id: '0010', name: 'Bantalan Karet Anti-Selip 4mm', costPrice: 22000, sellPrice: 35000, stock: 145 },
-  { id: '0011', name: 'Rel Laci Soft-Close 450mm', costPrice: 138000, sellPrice: 210000, stock: 72 },
-  { id: '0012', name: 'Engsel Pivot Mini — Hitam Matte', costPrice: 145000, sellPrice: 225000, stock: 0 },
-];
-
 const LOW_STOCK_THRESHOLD = 5;
 
-function summarizeProductNames(items: InventoryItem[], emptyLabel: string): string {
+function summarizeProductNames(items: PosProduct[], emptyLabel: string): string {
   if (items.length === 0) return emptyLabel;
   if (items.length === 1) return items[0].name;
   return `${items[0].name} dan ${items.length - 1} lainnya`;
 }
 
-export const ProdukView: React.FC = () => {
-  const [items, setItems] = useState<InventoryItem[]>(INITIAL_PRODUK_INVENTORY);
+interface ProdukViewProps {
+  products: PosProduct[];
+  onProductCreated: (product: PosProduct) => void;
+  onProductUpdated: (product: PosProduct) => void;
+  onProductDeleted: (id: string) => void;
+}
+
+export const ProdukView: React.FC<ProdukViewProps> = ({
+  products,
+  onProductCreated,
+  onProductUpdated,
+  onProductDeleted,
+}) => {
+  const items = products;
   const [searchQuery, setSearchQuery] = useState('');
   const [sortKey, setSortKey] = useState<SortKey>('id');
   const [sortDir, setSortDir] = useState<SortDirection>('asc');
@@ -63,14 +58,15 @@ export const ProdukView: React.FC = () => {
   const [newCostPrice, setNewCostPrice] = useState('');
   const [newStock, setNewStock] = useState('');
   const [formError, setFormError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [contextMenu, setContextMenu] = useState<{
-    item: InventoryItem;
+    item: PosProduct;
     x: number;
     y: number;
   } | null>(null);
 
-  const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
+  const [selectedItem, setSelectedItem] = useState<PosProduct | null>(null);
   const [actionMode, setActionMode] = useState<ProductActionMode>('edit');
   const [editName, setEditName] = useState('');
   const [editSellPrice, setEditSellPrice] = useState('');
@@ -118,7 +114,7 @@ export const ProdukView: React.FC = () => {
     return String(maxId + 1).padStart(4, '0');
   }, [items]);
 
-  const openContextMenu = (e: React.MouseEvent<HTMLTableRowElement>, item: InventoryItem) => {
+  const openContextMenu = (e: React.MouseEvent<HTMLTableRowElement>, item: PosProduct) => {
     const menuWidth = 200;
     const menuHeight = 134;
     const padding = 10;
@@ -146,13 +142,14 @@ export const ProdukView: React.FC = () => {
   };
 
   const closeProductActions = () => {
+    if (isSubmitting) return;
     setSelectedItem(null);
     setActionError('');
   };
 
-  const handleSaveEdit = (e: React.FormEvent) => {
+  const handleSaveEdit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedItem) return;
+    if (!selectedItem || isSubmitting) return;
 
     const trimmedName = editName.trim();
     const parsedSell = Number(editSellPrice);
@@ -176,25 +173,29 @@ export const ProdukView: React.FC = () => {
       return;
     }
 
-    setItems((prev) =>
-      prev.map((item) =>
-        item.id === selectedItem.id
-          ? {
-              ...item,
-              name: trimmedName,
-              sellPrice: Math.round(parsedSell),
-              costPrice: Math.round(parsedCost),
-              stock: parsedStock,
-            }
-          : item
-      )
-    );
-    closeProductActions();
+    setActionError('');
+    setIsSubmitting(true);
+    try {
+      const { product } = await updateProductApi(selectedItem.id, {
+        name: trimmedName,
+        sellPrice: Math.round(parsedSell),
+        costPrice: Math.round(parsedCost),
+        stock: parsedStock,
+      });
+      onProductUpdated(product);
+      setSelectedItem(null);
+    } catch (error) {
+      setActionError(
+        error instanceof Error ? error.message : 'Gagal memperbarui produk.'
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const handleConfirmRestock = (e: React.FormEvent) => {
+  const handleConfirmRestock = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedItem) return;
+    if (!selectedItem || isSubmitting) return;
 
     const added = Number(restockAmount);
     if (!Number.isInteger(added) || added <= 0) {
@@ -202,18 +203,38 @@ export const ProdukView: React.FC = () => {
       return;
     }
 
-    setItems((prev) =>
-      prev.map((item) =>
-        item.id === selectedItem.id ? { ...item, stock: item.stock + added } : item
-      )
-    );
-    closeProductActions();
+    setActionError('');
+    setIsSubmitting(true);
+    try {
+      const { product } = await updateProductApi(selectedItem.id, {
+        restockDelta: added,
+      });
+      onProductUpdated(product);
+      setSelectedItem(null);
+    } catch (error) {
+      setActionError(
+        error instanceof Error ? error.message : 'Gagal menambahkan stok.'
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const handleConfirmDelete = () => {
-    if (!selectedItem) return;
-    setItems((prev) => prev.filter((item) => item.id !== selectedItem.id));
-    closeProductActions();
+  const handleConfirmDelete = async () => {
+    if (!selectedItem || isSubmitting) return;
+    setActionError('');
+    setIsSubmitting(true);
+    try {
+      await deleteProductApi(selectedItem.id);
+      onProductDeleted(selectedItem.id);
+      setSelectedItem(null);
+    } catch (error) {
+      setActionError(
+        error instanceof Error ? error.message : 'Gagal menghapus produk.'
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const openAddModal = () => {
@@ -225,8 +246,10 @@ export const ProdukView: React.FC = () => {
     setIsAddModalOpen(true);
   };
 
-  const handleAddProduct = (e: React.FormEvent) => {
+  const handleAddProduct = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
+
     const trimmedName = newName.trim();
     const parsedSell = Number(newSellPrice);
     const parsedStock = Number(newStock);
@@ -249,16 +272,24 @@ export const ProdukView: React.FC = () => {
       return;
     }
 
-    const created: InventoryItem = {
-      id: nextProductId,
-      name: trimmedName,
-      sellPrice: Math.round(parsedSell),
-      costPrice: Math.round(parsedCost),
-      stock: parsedStock,
-    };
-
-    setItems((prev) => [...prev, created]);
-    setIsAddModalOpen(false);
+    setFormError('');
+    setIsSubmitting(true);
+    try {
+      const { product } = await createProductApi({
+        name: trimmedName,
+        sellPrice: Math.round(parsedSell),
+        costPrice: Math.round(parsedCost),
+        stock: parsedStock,
+      });
+      onProductCreated(product);
+      setIsAddModalOpen(false);
+    } catch (error) {
+      setFormError(
+        error instanceof Error ? error.message : 'Gagal menambahkan produk.'
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const summary = useMemo(() => {
@@ -534,10 +565,14 @@ export const ProdukView: React.FC = () => {
                 <tr>
                   <td colSpan={5} className="py-12 text-center">
                     <div className="text-[13.5px] font-medium text-[#f2f2f0]">
-                      Produk tidak ditemukan
+                      {items.length === 0
+                        ? 'Belum ada produk di toko ini'
+                        : 'Produk tidak ditemukan'}
                     </div>
                     <p className="text-[12px] text-[#7c7c78] mt-1">
-                      Coba kata kunci pencarian lain.
+                      {items.length === 0
+                        ? 'Klik "Tambah produk" untuk mulai mengisi katalog.'
+                        : 'Coba kata kunci pencarian lain.'}
                     </p>
                   </td>
                 </tr>
@@ -746,16 +781,18 @@ export const ProdukView: React.FC = () => {
               <div className="pt-[6px] flex items-center justify-end gap-[10px]">
                 <button
                   type="button"
+                  disabled={isSubmitting}
                   onClick={() => setIsAddModalOpen(false)}
-                  className="h-[40px] px-[18px] rounded-full bg-[#242422] hover:bg-[#2e2e2b] text-[#e5e5e2] text-[12.5px] font-medium transition-colors cursor-pointer"
+                  className="h-[40px] px-[18px] rounded-full bg-[#242422] hover:bg-[#2e2e2b] disabled:opacity-40 text-[#e5e5e2] text-[12.5px] font-medium transition-colors cursor-pointer"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="h-[40px] px-[20px] rounded-full bg-[#ededeb] hover:bg-white text-[#141414] text-[12.5px] font-semibold transition-colors cursor-pointer"
+                  disabled={isSubmitting}
+                  className="h-[40px] px-[20px] rounded-full bg-[#ededeb] hover:bg-white disabled:opacity-40 text-[#141414] text-[12.5px] font-semibold transition-colors cursor-pointer"
                 >
-                  Simpan produk
+                  {isSubmitting ? 'Menyimpan...' : 'Simpan produk'}
                 </button>
               </div>
             </form>
@@ -907,16 +944,18 @@ export const ProdukView: React.FC = () => {
                 <div className="pt-[6px] flex items-center justify-end gap-[10px]">
                   <button
                     type="button"
+                    disabled={isSubmitting}
                     onClick={closeProductActions}
-                    className="h-[40px] px-[18px] rounded-full bg-[#242422] hover:bg-[#2e2e2b] text-[#e5e5e2] text-[12.5px] font-medium transition-colors cursor-pointer"
+                    className="h-[40px] px-[18px] rounded-full bg-[#242422] hover:bg-[#2e2e2b] disabled:opacity-40 text-[#e5e5e2] text-[12.5px] font-medium transition-colors cursor-pointer"
                   >
                     Batal
                   </button>
                   <button
                     type="submit"
-                    className="h-[40px] px-[20px] rounded-full bg-[#ededeb] hover:bg-white text-[#141414] text-[12.5px] font-semibold transition-colors cursor-pointer"
+                    disabled={isSubmitting}
+                    className="h-[40px] px-[20px] rounded-full bg-[#ededeb] hover:bg-white disabled:opacity-40 text-[#141414] text-[12.5px] font-semibold transition-colors cursor-pointer"
                   >
-                    Simpan perubahan
+                    {isSubmitting ? 'Menyimpan...' : 'Simpan perubahan'}
                   </button>
                 </div>
               </form>
@@ -979,16 +1018,18 @@ export const ProdukView: React.FC = () => {
                 <div className="pt-[6px] flex items-center justify-end gap-[10px]">
                   <button
                     type="button"
+                    disabled={isSubmitting}
                     onClick={closeProductActions}
-                    className="h-[40px] px-[18px] rounded-full bg-[#242422] hover:bg-[#2e2e2b] text-[#e5e5e2] text-[12.5px] font-medium transition-colors cursor-pointer"
+                    className="h-[40px] px-[18px] rounded-full bg-[#242422] hover:bg-[#2e2e2b] disabled:opacity-40 text-[#e5e5e2] text-[12.5px] font-medium transition-colors cursor-pointer"
                   >
                     Batal
                   </button>
                   <button
                     type="submit"
-                    className="h-[40px] px-[20px] rounded-full bg-[#ededeb] hover:bg-white text-[#141414] text-[12.5px] font-semibold transition-colors cursor-pointer"
+                    disabled={isSubmitting}
+                    className="h-[40px] px-[20px] rounded-full bg-[#ededeb] hover:bg-white disabled:opacity-40 text-[#141414] text-[12.5px] font-semibold transition-colors cursor-pointer"
                   >
-                    Tambah stok
+                    {isSubmitting ? 'Menyimpan...' : 'Tambah stok'}
                   </button>
                 </div>
               </form>
@@ -1002,20 +1043,28 @@ export const ProdukView: React.FC = () => {
                   Tindakan ini akan menghapus produk dari daftar stok saat ini.
                 </div>
 
+                {actionError && (
+                  <div className="rounded-[10px] bg-white/[0.05] border border-white/[0.12] px-[12px] py-[8px] text-[12px] text-[#f2f2f0]">
+                    {actionError}
+                  </div>
+                )}
+
                 <div className="flex items-center justify-end gap-[10px]">
                   <button
                     type="button"
+                    disabled={isSubmitting}
                     onClick={closeProductActions}
-                    className="h-[40px] px-[18px] rounded-full bg-[#242422] hover:bg-[#2e2e2b] text-[#e5e5e2] text-[12.5px] font-medium transition-colors cursor-pointer"
+                    className="h-[40px] px-[18px] rounded-full bg-[#242422] hover:bg-[#2e2e2b] disabled:opacity-40 text-[#e5e5e2] text-[12.5px] font-medium transition-colors cursor-pointer"
                   >
                     Batal
                   </button>
                   <button
                     type="button"
+                    disabled={isSubmitting}
                     onClick={handleConfirmDelete}
-                    className="h-[40px] px-[20px] rounded-full bg-[#ededeb] hover:bg-white text-[#141414] text-[12.5px] font-semibold transition-colors cursor-pointer"
+                    className="h-[40px] px-[20px] rounded-full bg-[#ededeb] hover:bg-white disabled:opacity-40 text-[#141414] text-[12.5px] font-semibold transition-colors cursor-pointer"
                   >
-                    Hapus produk
+                    {isSubmitting ? 'Menghapus...' : 'Hapus produk'}
                   </button>
                 </div>
               </div>
